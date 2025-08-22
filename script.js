@@ -3,7 +3,7 @@
  ***********************/
 const ADMIN_PASSWORD = "admin123"; // NOTE: front-end only; not secure
 
-// Year-scoped storage (FIXED: removed stray text that broke parsing)
+// Year-scoped storage
 function getYearKey(base) {
   const year = localStorage.getItem("currentYear") || "default";
   return `${base}_${year}`;
@@ -26,7 +26,7 @@ function addLog(type, message, extra = {}) {
     ...extra
   });
   save("logs", logs);
-  renderLogs(); // no-op if not on admin page
+  renderLogs();
 }
 function renderLogs() {
   const el = document.getElementById("logsList");
@@ -46,7 +46,7 @@ function populateOptions(id, storageKey, placeholder = "Select") {
     list.map(item => `<option>${item}</option>`).join("");
 }
 
-// Logged-in user helpers (localStorage for persistence)
+// Logged-in user helpers
 function getLoggedInUser() {
   return JSON.parse(localStorage.getItem("loggedInUser"));
 }
@@ -141,16 +141,14 @@ function loadProfile() {
 let studentChartInstance = null;
 function loadStudentDashboard() {
   requireLogin();
-  disableVotingIfPastDeadline(); // also shows countdown if not expired
+  disableVotingIfPastDeadline();
 
-  // Show results chart only if published
   const published = localStorage.getItem("resultsPublished") === "true";
   const holder = document.getElementById("studentResults");
   if (!holder) return;
   if (!published) { holder.style.display = "none"; return; }
 
   holder.style.display = "block";
-  // Build tally of votes per candidate (all positions combined)
   const votes = load("votes");
   const tally = {};
   votes.forEach(v => { tally[v.votedFor] = (tally[v.votedFor] || 0) + 1; });
@@ -347,12 +345,10 @@ function loadResultsInto(resultsDivId, chartCanvasId, wrapperId, noResultsId) {
   if (noRes) noRes.style.display = "none";
   if (wrapper) wrapper.style.display = "block";
 
-  // Tally per candidate
   const tally = {};
   candidates.forEach(c => { tally[c.name] = 0; });
   votes.forEach(v => { if (tally[v.votedFor] !== undefined) tally[v.votedFor]++; });
 
-  // List by position with winner highlight
   const byPosition = {};
   candidates.forEach(c => {
     byPosition[c.position] = byPosition[c.position] || [];
@@ -371,7 +367,6 @@ function loadResultsInto(resultsDivId, chartCanvasId, wrapperId, noResultsId) {
 
   if (resDiv) resDiv.innerHTML = sectionHTML || "<p>No candidates available.</p>";
 
-  // Chart
   if (chartCanvas) {
     if (adminChartInstance) adminChartInstance.destroy();
     adminChartInstance = new Chart(chartCanvas, {
@@ -390,7 +385,8 @@ function loadResultsInto(resultsDivId, chartCanvasId, wrapperId, noResultsId) {
  ***********************/
 function checkAdmin() {
   const pass = document.getElementById("adminPass").value;
-  if (pass === ADMIN_PASSWORD) {
+  const storedPass = localStorage.getItem("adminPassword") || ADMIN_PASSWORD;
+  if (pass === storedPass) {
     sessionStorage.setItem("isAdmin", "true");
     document.getElementById("adminLogin").style.display = "none";
     document.getElementById("adminPanel").style.display = "block";
@@ -400,10 +396,11 @@ function checkAdmin() {
     alert("Wrong password.");
   }
 }
+
 function logoutAdmin() {
   sessionStorage.removeItem("isAdmin");
   addLog("admin", "Admin logged out");
-  location.href = "master.html";
+  location.href = "index.html";
 }
 
 function renderAdminData() {
@@ -421,7 +418,6 @@ function renderAdminData() {
   const dormList = document.getElementById("dormList");
   const postList = document.getElementById("postList");
 
-  // RENDER with delete buttons ✅
   if (classList) classList.innerHTML = classes.map((c, i) =>
     `<li>${c}<button onclick="deleteClass(${i})">🗑️</button></li>`).join("");
   if (dormList) dormList.innerHTML = dorms.map((d, i) =>
@@ -459,7 +455,6 @@ function renderAdminData() {
     ).join("") : "<p>No pending nominations.</p>";
   }
 
-  // Logs + Chart
   renderLogs();
   renderAdminChart();
 }
@@ -523,18 +518,15 @@ function addPost() {
   renderAdminData();
 }
 
-// NEW: Delete Class/Dorm/Post with cleanup + logs ✅
 function deleteClass(index) {
   const classes = load("classes");
   if (index < 0 || index >= classes.length) return;
   const removed = classes[index];
   if (!confirm(`Delete class "${removed}"? This may affect candidates.`)) return;
 
-  // remove class
   classes.splice(index, 1);
   save("classes", classes);
 
-  // optional cleanup: drop candidates/nominations tied to this class
   const cands = load("candidates").filter(c => c.class !== removed);
   save("candidates", cands);
   const noms = load("nominations").filter(n => n.class !== removed);
@@ -571,7 +563,6 @@ function deletePost(index) {
   posts.splice(index, 1);
   save("posts", posts);
 
-  // cleanup: candidates/nominations/votes under this post
   const cands = load("candidates").filter(c => c.position !== removed);
   save("candidates", cands);
   const noms = load("nominations").filter(n => n.position !== removed);
@@ -654,6 +645,32 @@ function unpublishResults() {
   localStorage.setItem("resultsPublished", "false");
   addLog("results", "Results unpublished");
   alert("Results have been hidden.");
+}
+
+/***********************
+ * CHANGE ADMIN PASSWORD
+ ***********************/
+function changeAdminPassword() {
+  const oldPass = document.getElementById("oldAdminPass").value;
+  const newPass = document.getElementById("newAdminPass").value;
+  if (!oldPass || !newPass) {
+    alert("Please fill in both fields.");
+    return;
+  }
+  const storedPass = localStorage.getItem("adminPassword") || ADMIN_PASSWORD;
+  if (oldPass !== storedPass) {
+    alert("Current password is incorrect.");
+    return;
+  }
+  if (newPass.length < 5) {
+    alert("New password must be at least 5 characters.");
+    return;
+  }
+  localStorage.setItem("adminPassword", newPass);
+  alert("Admin password changed successfully.");
+  addLog("admin", "Admin password changed");
+  document.getElementById("oldAdminPass").value = "";
+  document.getElementById("newAdminPass").value = "";
 }
 
 /***********************

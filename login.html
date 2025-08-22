@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Login - School Voting System</title>
-  <link rel="icon" href="logo.png" type="image/png">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
   <header>
@@ -26,19 +26,18 @@
       <button type="submit">Login</button>
     </form>
     <p style="text-align:center; margin-top: 20px;">
-      Not registered? <a href="register.html">Register Here</a>
-    </p>
-    <p style="text-align:center; margin-top: 10px;">
+      Not registered? <a href="register.html">Register Here</a> |
       <a href="index.html">🏠 Back to Home</a>
     </p>
   </div>
 
   <script>
-    // Load classes and dorms from localStorage
     function populateDropdown(id, listName) {
       const list = JSON.parse(localStorage.getItem(listName)) || [];
       const select = document.getElementById(id);
-      select.innerHTML = list.length ? list.map(item => `<option>${item}</option>`).join('') : '<option disabled selected>No options available</option>';
+      select.innerHTML = list.length 
+        ? list.map(item => `<option>${item}</option>`).join('') 
+        : '<option disabled selected>No options available</option>';
     }
 
     populateDropdown('class', 'classes');
@@ -55,10 +54,10 @@
 
       if (user) {
         localStorage.setItem('loggedInUser', JSON.stringify(user));
-        alert('Login successful');
+        alert('✅ Login successful');
         window.location.href = 'dashboard.html';
       } else {
-        alert('Invalid login. Please check your details.');
+        alert('❌ Invalid login. Please check your details.');
       }
     });
   </script>

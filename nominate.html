@@ -1,48 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>Nominate</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="initNomination()">
-  <header class="main-header">
-    <img src="logo.png" alt="School Logo" class="logo">
-    <div>
-      <h1>🏅 Nominate Yourself</h1>
-    </div>
-  </header>
-
+<body onload="loadNominationOptions()">
   <div class="container">
-    <label for="name">Full Name</label>
-    <input id="name" readonly>
-
-    <label for="position">Position</label>
+    <h2>Nominate Yourself</h2>
+    <input id="name" placeholder="Your Full Name">
     <select id="position"><option>Loading Posts...</option></select>
-
-    <label for="class">Class</label>
     <select id="class"><option>Loading Classes...</option></select>
-
-    <label for="dorm">Dorm</label>
     <select id="dorm"><option>Loading Dorms...</option></select>
-
-    <label for="manifesto">Manifesto</label>
     <textarea id="manifesto" placeholder="Your Manifesto"></textarea>
-
-    <label for="photo">Upload Photo (optional)</label>
-    <input type="file" id="photo" accept="image/*">
-
     <button onclick="nominate()">Submit Nomination</button>
   </div>
   <script src="script.js"></script>
-  <script>
-    function initNomination(){
-      const u = requireLogin();
-      document.getElementById("name").value = u.name;
-      populateOptions("position","posts","Select Position");
-      populateOptions("class","classes","Select Class");
-      populateOptions("dorm","dorms","Select Dorm");
-    }
-  </script>
 </body>
 </html>

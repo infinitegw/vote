@@ -1,35 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
   <title>View Results</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="initResultsPage()">
-  <header class="main-header">
-    <img src="logo.png" alt="School Logo" class="logo">
-    <div>
-      <h1>📊 Published Results</h1>
-    </div>
-  </header>
-
+<body onload="loadResults()">
   <div class="container">
-    <div id="resultsWrapper" style="display:none;">
-      <div id="results"></div>
-      <canvas id="resultsChart" width="400" height="200"></canvas>
-    </div>
-    <p id="noResults" class="muted" style="display:none;">
-      ⚠️ Results have not been published yet. Please check back later.
-    </p>
+    <h2>📊 Published Results</h2>
+    <div id="results"></div>
     <button onclick="location.href='dashboard.html'">🔙 Back</button>
   </div>
-
   <script src="script.js"></script>
-  <script>
-    function initResultsPage(){
-      loadResultsInto('results','resultsChart','resultsWrapper','noResults');
-    }
-  </script>
 </body>
 </html>
