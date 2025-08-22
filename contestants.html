@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contestants – St. Joseph's Kitale</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="showCandidates()">
+  <div class="container">
+    <h2>🏅 Contestants</h2>
+    <div id="candList"></div>
+    <button onclick="history.back()">🔙 Back</button>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    function showCandidates() {
+      const cands = load("candidates");
+      const out = cands.map(c => `
+        <div class="candidate-card">
+          <img src="${c.photo}" width="100" height="100">
+          <h3>${c.name}</h3>
+          <p><b>Post:</b> ${c.position}</p>
+          <p><b>Class:</b> ${c.class} | <b>Dorm:</b> ${c.dorm}</p>
+          <p><b>Manifesto:</b><br>${c.manifesto}</p>
+        </div>
+      `).join("");
+      document.getElementById("candList").innerHTML = out;
+    }
+  </script>
+</body>
+</html>

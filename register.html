@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="loadRegistrationOptions()">
+  <div class="container">
+    <h2>📝 Student Registration</h2>
+    <input type="text" id="adm" placeholder="Admission Number">
+    <input type="text" id="name" placeholder="Full Name">
+    <select id="class"><option disabled selected>Loading Classes...</option></select>
+    <select id="dorm"><option disabled selected>Loading Dorms...</option></select>
+    <button onclick="register()">Register</button>
+    <p>Already registered? <a href="login.html">Login here</a></p>
+    <p><a href="index.html">🏠 Back to Home</a></p>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    function loadRegistrationOptions() {
+      const classes = JSON.parse(localStorage.getItem("classes")) || [];
+      const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+
+      document.getElementById("class").innerHTML =
+        `<option disabled selected>Select Class</option>` +
+        classes.map(c => `<option>${c}</option>`).join("");
+
+      document.getElementById("dorm").innerHTML =
+        `<option disabled selected>Select Dorm</option>` +
+        dorms.map(d => `<option>${d}</option>`).join("");
+    }
+  </script>
+</body>
+</html>

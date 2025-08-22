@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel – St. Joseph's Kitale</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body onload="renderAdminData()">
+  <div class="container">
+    <h2>🛠️ Admin Panel</h2>
+    <div id="adminLogin">
+      <input type="password" id="adminPass" placeholder="Enter Admin Password">
+      <button onclick="checkAdmin()">Login</button>
+    </div>
+
+    <div id="adminPanel" style="display: none;">
+      <p><strong>Academic Year:</strong> <span id="yearDisplay">Not Set</span></p>
+      <input id="academicYear" placeholder="Set Year (e.g. 2024/2025)">
+      <button onclick="setAcademicYear()">Update Year</button>
+
+      <h3>Set Voting Deadline</h3>
+      <input type="datetime-local" id="deadlineInput">
+      <button onclick="setVotingDeadline()">Set Deadline</button>
+
+      <h3>Manage Classes</h3>
+      <input id="newClass" placeholder="Add New Class">
+      <button onclick="addClass()">Add Class</button>
+      <ul id="classList"></ul>
+
+      <h3>Manage Dorms</h3>
+      <input id="newDorm" placeholder="Add New Dorm">
+      <button onclick="addDorm()">Add Dorm</button>
+      <ul id="dormList"></ul>
+
+      <h3>Manage Posts</h3>
+      <input id="newPost" placeholder="Add New Post">
+      <button onclick="addPost()">Add Post</button>
+      <ul id="postList"></ul>
+
+      <h3>Add Candidate</h3>
+      <input id="newCandName" placeholder="Full Name">
+      <select id="newCandPosition"></select>
+      <select id="newCandClass"></select>
+      <select id="newCandDorm"></select>
+      <button onclick="addCandidate()">Add</button>
+      <ul id="candidatesList"></ul>
+
+      <h3>Pending Nominations</h3>
+      <div id="pendingNominations"></div>
+
+      <h3>Vote Export</h3>
+      <select id="exportFilterType">
+        <option value="class">By Class</option>
+        <option value="dorm">By Dorm</option>
+        <option value="post">By Post</option>
+      </select>
+      <input id="exportFilterValue" placeholder="Enter Value">
+      <button onclick="exportFilteredCSV()">Export CSV</button>
+      <button onclick="exportFilteredPDF()">Export PDF</button>
+
+      <h3>Live Results</h3>
+      <canvas id="adminChart" height="100"></canvas>
+
+      <h3>Logs</h3>
+      <ul id="logsList"></ul>
+
+      <br><button onclick="logoutAdmin()">Logout Admin</button>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

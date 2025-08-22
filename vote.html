@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vote – St. Joseph's Kitale</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>🗳️ Cast Your Vote</h1>
+    <nav>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <a href="results.html">Results</a>
+      <a href="#" onclick="logout()">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <div id="voteSection">
+      <h2>Available Positions</h2>
+      <div id="voteForms"></div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 St. Joseph's Boys High School – Kitale</p>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    // Check login
+    const student = JSON.parse(localStorage.getItem("currentStudent"));
+    if (!student) {
+      alert("Please login first.");
+      window.location.href = "login.html";
+    }
+
+    // Load voting form
+    loadVotingForm();
+
+    function loadVotingForm() {
+      const posts = JSON.parse(localStorage.getItem("posts")) || ["School Captain", "Dorm Representative"];
+      const contestants = JSON.parse(localStorage.getItem("contestants")) || [];
+      const votes = JSON.parse(localStorage.getItem("votes")) || {};
+      const adm = student.adm;
+
+      const votedPosts = votes[adm] ? Object.keys(votes[adm]) : [];
+
+      let html = '';
+      posts.forEach(post => {
+        if (!votedPosts.includes(post)) {
+          const options = contestants.filter(c => c.post === post);
+          if (options.length > 0) {
+            html += `<div class="voteBox">
+              <h3>${post}</h3>
+              <select id="select-${post}">
+                <option value="">-- Select Candidate --</option>`;
+            options.forEach(opt => {
+              html += `<option value="${opt.name}">${opt.name}</option>`;
+            });
+            html += `</select>
+              <button onclick="submitVote('${post}')">Vote</button>
+            </div>`;
+          }
+        }
+      });
+
+      if (html === '') {
+        html = `<p>You have already voted for all available positions.</p>`;
+      }
+
+      document.getElementById("voteForms").innerHTML = html;
+    }
+
+    function submitVote(post) {
+      const selected = document.getElementById(`select-${post}`).value;
+      if (!selected) return alert("Please select a candidate.");
+      
+      const votes = JSON.parse(localStorage.getItem("votes")) || {};
+      const adm = student.adm;
+
+      if (!votes[adm]) votes[adm] = {};
+      votes[adm][post] = selected;
+
+      localStorage.setItem("votes", JSON.stringify(votes));
+      alert(`Your vote for ${post} has been submitted!`);
+      loadVotingForm();
+    }
+  </script>
+</body>
+</html>
