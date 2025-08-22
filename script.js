@@ -736,3 +736,9 @@ function exportFilteredPDF() {
 
   addLog("export", `PDF export: ${type}=${value} (${filtered.length} rows)`);
 }
+
+// --- Ensure dropdowns are populated on register/login pages ---
+window.onload = function() {
+  populateOptions("class", "classes", "Select Class");
+  populateOptions("dorm", "dorms", "Select Dorm");
+};
