@@ -2,62 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - School Voting System</title>
-  <link rel="icon" href="logo.png" type="image/png">
+  <title>St. Joseph's Voting Portal</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Favicon (replace logo.png with your actual logo file) -->
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
-  <header>
-    <h1>St. Joseph’s Boys High School Kitale</h1>
-    <h2>Student Login</h2>
+  <header class="main-header">
+    <h1>🕊️ St. Joseph’s Boys Kitale Voting System</h1>
+    <p class="voice">"Let all things be done decently and in order" – 1 Cor. 14:40</p>
   </header>
-
-  <div class="container">
-    <form id="loginForm">
-      <label for="adm">Admission Number</label>
-      <input type="text" id="adm" required>
-
-      <label for="class">Class</label>
-      <select id="class" required></select>
-
-      <label for="dorm">Dorm</label>
-      <select id="dorm" required></select>
-
-      <button type="submit">Login</button>
-    </form>
-    <p style="text-align:center; margin-top: 20px;">
-      Not registered? <a href="register.html">Register Here</a>
-    </p>
-  </div>
-
+  
+  <nav class="main-nav">
+    <button onclick="go('login.html')">👨‍🎓 Login</button>
+    <button onclick="go('register.html')">📝 Register</button>
+    <button onclick="go('admin.html')">🛠️ Admin Panel</button>
+  </nav>
+  
+  <main class="main-content">
+    <h2>Welcome! Choose an option above to begin.</h2>
+  </main>
+  
+  <footer class="main-footer">&copy; 2025 St. Joseph’s Boys Kitale</footer>
+  
   <script>
-    // Load classes and dorms from localStorage
-    function populateDropdown(id, listName) {
-      const list = JSON.parse(localStorage.getItem(listName)) || [];
-      const select = document.getElementById(id);
-      select.innerHTML = list.length ? list.map(item => `<option>${item}</option>`).join('') : '<option disabled selected>No options available</option>';
+    function go(page) {
+      location.href = page;
     }
-
-    populateDropdown('class', 'classes');
-    populateDropdown('dorm', 'dorms');
-
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const adm = document.getElementById('adm').value.trim();
-      const studentClass = document.getElementById('class').value;
-      const dorm = document.getElementById('dorm').value;
-
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      const user = students.find(s => s.adm === adm && s.class === studentClass && s.dorm === dorm);
-
-      if (user) {
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        alert('Login successful');
-        window.location.href = 'dashboard.html';
-      } else {
-        alert('Invalid login. Please check your details.');
-      }
-    });
   </script>
 </body>
 </html>
