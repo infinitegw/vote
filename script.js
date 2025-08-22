@@ -3,7 +3,7 @@
  ***********************/
 const ADMIN_PASSWORD = "admin123"; // NOTE: front-end only; not secure
 
-// Year-scoped storage
+// Year-scoped storage (FIXED: removed stray text that broke parsing)
 function getYearKey(base) {
   const year = localStorage.getItem("currentYear") || "default";
   return `${base}_${year}`;
@@ -131,8 +131,10 @@ function loadProfile() {
   document.getElementById("class").innerText = user.class;
   document.getElementById("dorm").innerText = user.dorm;
   if (user.photo) {
-    document.getElementById("photoWrapper").style.display = "block";
-    document.getElementById("photo").src = user.photo;
+    const wrap = document.getElementById("photoWrapper");
+    const img = document.getElementById("photo");
+    if (wrap) wrap.style.display = "block";
+    if (img) img.src = user.photo;
   }
 }
 
@@ -219,6 +221,7 @@ function buildVotingUI(containerId = "voteForms") {
   const votedPosts = votes.filter(v => v.adm === user.adm).map(v => v.position);
 
   const container = document.getElementById(containerId);
+  if (!container) return;
   container.innerHTML = "";
 
   let html = "";
@@ -418,9 +421,13 @@ function renderAdminData() {
   const dormList = document.getElementById("dormList");
   const postList = document.getElementById("postList");
 
-  if (classList) classList.innerHTML = classes.map(c => `<li>${c}</li>`).join("");
-  if (dormList) dormList.innerHTML = dorms.map(d => `<li>${d}</li>`).join("");
-  if (postList) postList.innerHTML = posts.map(p => `<li>${p}</li>`).join("");
+  // RENDER with delete buttons ✅
+  if (classList) classList.innerHTML = classes.map((c, i) =>
+    `<li>${c}<button onclick="deleteClass(${i})">🗑️</button></li>`).join("");
+  if (dormList) dormList.innerHTML = dorms.map((d, i) =>
+    `<li>${d}<button onclick="deleteDorm(${i})">🗑️</button></li>`).join("");
+  if (postList) postList.innerHTML = posts.map((p, i) =>
+    `<li>${p}<button onclick="deletePost(${i})">🗑️</button></li>`).join("");
 
   const candSel = document.getElementById("newCandPosition");
   const classSel = document.getElementById("newCandClass");
@@ -452,10 +459,8 @@ function renderAdminData() {
     ).join("") : "<p>No pending nominations.</p>";
   }
 
-  // Logs
+  // Logs + Chart
   renderLogs();
-
-  // Chart
   renderAdminChart();
 }
 
@@ -515,6 +520,66 @@ function addPost() {
   save("posts", posts);
   addLog("post", `Added post: ${newPost}`);
   document.getElementById("newPost").value = "";
+  renderAdminData();
+}
+
+// NEW: Delete Class/Dorm/Post with cleanup + logs ✅
+function deleteClass(index) {
+  const classes = load("classes");
+  if (index < 0 || index >= classes.length) return;
+  const removed = classes[index];
+  if (!confirm(`Delete class "${removed}"? This may affect candidates.`)) return;
+
+  // remove class
+  classes.splice(index, 1);
+  save("classes", classes);
+
+  // optional cleanup: drop candidates/nominations tied to this class
+  const cands = load("candidates").filter(c => c.class !== removed);
+  save("candidates", cands);
+  const noms = load("nominations").filter(n => n.class !== removed);
+  save("nominations", noms);
+
+  addLog("class", `Deleted class: ${removed}`);
+  renderAdminData();
+}
+
+function deleteDorm(index) {
+  const dorms = load("dorms");
+  if (index < 0 || index >= dorms.length) return;
+  const removed = dorms[index];
+  if (!confirm(`Delete dorm "${removed}"? This may affect candidates.`)) return;
+
+  dorms.splice(index, 1);
+  save("dorms", dorms);
+
+  const cands = load("candidates").filter(c => c.dorm !== removed);
+  save("candidates", cands);
+  const noms = load("nominations").filter(n => n.dorm !== removed);
+  save("nominations", noms);
+
+  addLog("dorm", `Deleted dorm: ${removed}`);
+  renderAdminData();
+}
+
+function deletePost(index) {
+  const posts = load("posts");
+  if (index < 0 || index >= posts.length) return;
+  const removed = posts[index];
+  if (!confirm(`Delete post "${removed}"? Related candidates and votes will be removed.`)) return;
+
+  posts.splice(index, 1);
+  save("posts", posts);
+
+  // cleanup: candidates/nominations/votes under this post
+  const cands = load("candidates").filter(c => c.position !== removed);
+  save("candidates", cands);
+  const noms = load("nominations").filter(n => n.position !== removed);
+  save("nominations", noms);
+  const votes = load("votes").filter(v => v.position !== removed);
+  save("votes", votes);
+
+  addLog("post", `Deleted post: ${removed} (removed related candidates, nominations & votes)`);
   renderAdminData();
 }
 
