@@ -3,38 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - School Voting System</title>
+  <title>Student Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h2>Student Login</h2>
     <form id="loginForm">
-      <label for="admissionNo">Admission Number</label>
+      <label for="admissionNo">Admission Number:</label>
       <input type="text" id="admissionNo" placeholder="Enter Admission Number" required>
 
-      <label for="fullName">Full Name</label>
+      <label for="fullName">Full Name:</label>
       <input type="text" id="fullName" placeholder="Enter Full Name" required>
 
-      <label for="class">Class</label>
+      <label for="class">Class:</label>
       <select id="class" required>
-        <option value="">Select Class</option>
-        <!-- Classes from admin will load here -->
+        <option value="">-- Select Class --</option>
       </select>
 
-      <label for="dorm">Dorm</label>
+      <label for="dorm">Dorm:</label>
       <select id="dorm" required>
-        <option value="">Select Dorm</option>
-        <!-- Dorms from admin will load here -->
+        <option value="">-- Select Dorm --</option>
       </select>
 
       <button type="submit">Login</button>
     </form>
 
-    <p>Don’t have an account? <a href="register.html">Register here</a></p>
-    <p><a href="index.html">Back to Home</a></p>
+    <p>Don't have an account? <a href="register.html">Register here</a></p>
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Populate Class and Dorm dynamically from localStorage (added by admin)
+    document.addEventListener("DOMContentLoaded", function () {
+      let classes = JSON.parse(localStorage.getItem("classes")) || [];
+      let dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+
+      let classSelect = document.getElementById("class");
+      let dormSelect = document.getElementById("dorm");
+
+      classes.forEach(cls => {
+        let option = document.createElement("option");
+        option.value = cls;
+        option.textContent = cls;
+        classSelect.appendChild(option);
+      });
+
+      dorms.forEach(dr => {
+        let option = document.createElement("option");
+        option.value = dr;
+        option.textContent = dr;
+        dormSelect.appendChild(option);
+      });
+    });
+  </script>
 </body>
 </html>
