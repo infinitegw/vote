@@ -2,64 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - School Voting System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
+  <script src="script.js" defer></script>
 </head>
-<body>
-  <header>
-    <h1>St. Joseph’s Boys High School Kitale</h1>
-    <h2>Student Login</h2>
-  </header>
+<body onload="populateLoginDropdowns()">
 
   <div class="container">
+    <h2>Student Login</h2>
     <form id="loginForm">
-      <label for="adm">Admission Number</label>
-      <input type="text" id="adm" required>
+      
+      <!-- Username -->
+      <label for="loginUsername">Username</label>
+      <input type="text" id="loginUsername" required>
 
-      <label for="class">Class</label>
-      <select id="class" required></select>
+      <!-- Class (Dynamic) -->
+      <label for="loginClass">Class</label>
+      <select id="loginClass" required>
+        <!-- Options will be loaded dynamically from localStorage -->
+      </select>
 
-      <label for="dorm">Dorm</label>
-      <select id="dorm" required></select>
+      <!-- Dorm (Dynamic) -->
+      <label for="loginDorm">Dorm</label>
+      <select id="loginDorm" required>
+        <!-- Options will be loaded dynamically from localStorage -->
+      </select>
 
+      <!-- Login Button -->
       <button type="submit">Login</button>
     </form>
-    <p style="text-align:center; margin-top: 20px;">
-      Not registered? <a href="register.html">Register Here</a> |
-      <a href="index.html">🏠 Back to Home</a>
-    </p>
+
+    <p>Don’t have an account? <a href="register.html">Register here</a></p>
+    <p><a href="index.html">Back to Home</a></p>
   </div>
 
-  <script>
-    function populateDropdown(id, listName) {
-      const list = JSON.parse(localStorage.getItem(listName)) || [];
-      const select = document.getElementById(id);
-      select.innerHTML = list.length 
-        ? list.map(item => `<option>${item}</option>`).join('') 
-        : '<option disabled selected>No options available</option>';
-    }
-
-    populateDropdown('class', 'classes');
-    populateDropdown('dorm', 'dorms');
-
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const adm = document.getElementById('adm').value.trim();
-      const studentClass = document.getElementById('class').value;
-      const dorm = document.getElementById('dorm').value;
-
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      const user = students.find(s => s.adm === adm && s.class === studentClass && s.dorm === dorm);
-
-      if (user) {
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        alert('✅ Login successful');
-        window.location.href = 'dashboard.html';
-      } else {
-        alert('❌ Invalid login. Please check your details.');
-      }
-    });
-  </script>
 </body>
 </html>
