@@ -30,87 +30,22 @@
 
   <script src="script.js"></script>
   <script>
-    // Ensure user is logged in
-    const student = JSON.parse(localStorage.getItem("currentStudent"));
+    // ✅ Check login session safely
+    let student = null;
+    try {
+      student = JSON.parse(localStorage.getItem("currentStudent"));
+    } catch (e) {
+      student = null;
+    }
 
-    if (!student) {
-      alert("⚠️ Please login first.");
+    if (!student || !student.name) {
+      alert("Please login first.");
       window.location.href = "index.html";
     } else {
-      // Load voting form if logged in
-      loadVotingForm(student);
-    }
-
-    function loadVotingForm(student) {
-      const voteFormsDiv = document.getElementById("voteForms");
-      voteFormsDiv.innerHTML = "";
-
-      // Get candidates and positions
-      const candidates = JSON.parse(localStorage.getItem("candidates")) || [];
-      const posts = [...new Set(candidates.map(c => c.post))]; // Unique posts
-
-      if (posts.length === 0) {
-        voteFormsDiv.innerHTML = "<p>No candidates available for voting.</p>";
-        return;
+      // ✅ Load the voting form only if logged in
+      if (typeof loadVotingForm === "function") {
+        loadVotingForm();
       }
-
-      posts.forEach(post => {
-        const formDiv = document.createElement("div");
-        formDiv.classList.add("vote-form");
-
-        const title = document.createElement("h3");
-        title.textContent = post;
-        formDiv.appendChild(title);
-
-        const select = document.createElement("select");
-        select.id = `vote-${post}`;
-        select.innerHTML = `<option value="">-- Select Candidate --</option>`;
-
-        candidates
-          .filter(c => c.post === post)
-          .forEach(c => {
-            const option = document.createElement("option");
-            option.value = c.id;
-            option.textContent = `${c.name} (${c.class}, ${c.dorm})`;
-            select.appendChild(option);
-          });
-
-        formDiv.appendChild(select);
-
-        const btn = document.createElement("button");
-        btn.textContent = "Submit Vote";
-        btn.onclick = () => castVote(student, post, select.value);
-        formDiv.appendChild(btn);
-
-        voteFormsDiv.appendChild(formDiv);
-      });
-    }
-
-    function castVote(student, post, candidateId) {
-      if (!candidateId) {
-        alert("⚠️ Please select a candidate.");
-        return;
-      }
-
-      let votes = JSON.parse(localStorage.getItem("votes")) || [];
-
-      // Prevent multiple votes for the same post by same student
-      const existingVote = votes.find(v => v.studentId === student.id && v.post === post);
-      if (existingVote) {
-        alert("❌ You have already voted for this post.");
-        return;
-      }
-
-      votes.push({
-        studentId: student.id,
-        studentName: student.name,
-        post: post,
-        candidateId: candidateId,
-        timestamp: new Date().toISOString()
-      });
-
-      localStorage.setItem("votes", JSON.stringify(votes));
-      alert("✅ Your vote has been cast successfully!");
     }
   </script>
 </body>
