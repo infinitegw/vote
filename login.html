@@ -1,36 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Login</title>
+  <title>Vote</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="loadLoginOptions()">
+<body onload="loadVotePage()">
   <div class="container">
-    <h2>🔑 Student Login</h2>
-    <input type="text" id="adm" placeholder="Admission Number">
-    <select id="class"><option disabled selected>Loading Classes...</option></select>
-    <select id="dorm"><option disabled selected>Loading Dorms...</option></select>
-    <button onclick="login()">Login</button>
+    <h2>🗳️ Cast Your Vote</h2>
+    <div id="voteContainer"></div>
     <p>
-      New student? <a href="register.html">Register here</a> | 
-      <a href="index.html">🏠 Back to Home</a>
+      <a href="dashboard.html">⬅ Back to Dashboard</a>
     </p>
   </div>
 
   <script src="script.js"></script>
   <script>
-    function loadLoginOptions() {
-      const classes = JSON.parse(localStorage.getItem("classes")) || [];
-      const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+    function loadVotePage() {
+      // Check login
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!currentUser) {
+        alert("You must login first!");
+        window.location.href = "login.html";
+        return;
+      }
 
-      document.getElementById("class").innerHTML =
-        `<option disabled selected>Select Class</option>` +
-        classes.map(c => `<option>${c}</option>`).join("");
+      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
+      const votes = JSON.parse(localStorage.getItem("votes")) || {};
 
-      document.getElementById("dorm").innerHTML =
-        `<option disabled selected>Select Dorm</option>` +
-        dorms.map(d => `<option>${d}</option>`).join("");
+      let html = "";
+      const grouped = {};
+
+      // Group candidates by post
+      approved.forEach(c => {
+        if (!grouped[c.post]) grouped[c.post] = [];
+        grouped[c.post].push(c);
+      });
+
+      // Build UI
+      Object.keys(grouped).forEach(post => {
+        html += `<h3>${post}</h3><select id="vote_${post}">`;
+        html += `<option disabled selected>-- Select Candidate --</option>`;
+        grouped[post].forEach(c => {
+          html += `<option value="${c.name}">${c.name} (${c.class}, ${c.dorm})</option>`;
+        });
+        html += `</select><br><br>`;
+      });
+
+      html += `<button onclick="castVote()">Submit Vote</button>`;
+      document.getElementById("voteContainer").innerHTML = html;
+    }
+
+    function castVote() {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
+      let votes = JSON.parse(localStorage.getItem("votes")) || {};
+
+      // Ensure votes object has user record
+      if (!votes[currentUser.adm]) votes[currentUser.adm] = {};
+
+      const grouped = {};
+      approved.forEach(c => {
+        if (!grouped[c.post]) grouped[c.post] = [];
+        grouped[c.post].push(c);
+      });
+
+      let votedSomething = false;
+
+      Object.keys(grouped).forEach(post => {
+        const select = document.getElementById("vote_" + post);
+        if (select && select.value && !votes[currentUser.adm][post]) {
+          votes[currentUser.adm][post] = select.value;
+          votedSomething = true;
+        }
+      });
+
+      if (!votedSomething) {
+        alert("You already voted or did not select any candidate!");
+        return;
+      }
+
+      localStorage.setItem("votes", JSON.stringify(votes));
+      alert("✅ Your vote has been recorded!");
+      window.location.href = "dashboard.html";
     }
   </script>
 </body>
