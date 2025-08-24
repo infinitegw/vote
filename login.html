@@ -1,61 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Login</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="container">
-    <h2>Student Login</h2>
-    <form id="loginForm">
-      <label for="admissionNo">Admission Number:</label>
-      <input type="text" id="admissionNo" placeholder="Enter Admission Number" required>
+// LOGIN HANDLER
+document.getElementById("loginForm")?.addEventListener("submit", function (e) {
+  e.preventDefault();
 
-      <label for="fullName">Full Name:</label>
-      <input type="text" id="fullName" placeholder="Enter Full Name" required>
+  const admissionNo = document.getElementById("admissionNo").value.trim();
+  const fullName = document.getElementById("fullName").value.trim();
+  const className = document.getElementById("className").value;
+  const dorm = document.getElementById("dorm").value;
 
-      <label for="class">Class:</label>
-      <select id="class" required>
-        <option value="">-- Select Class --</option>
-      </select>
+  let students = JSON.parse(localStorage.getItem("students")) || [];
 
-      <label for="dorm">Dorm:</label>
-      <select id="dorm" required>
-        <option value="">-- Select Dorm --</option>
-      </select>
+  // Find matching student
+  const student = students.find(
+    (s) =>
+      s.admissionNo === admissionNo &&
+      s.fullName.toLowerCase() === fullName.toLowerCase() &&
+      s.className === className &&
+      s.dorm === dorm
+  );
 
-      <button type="submit">Login</button>
-    </form>
-
-    <p>Don't have an account? <a href="register.html">Register here</a></p>
-  </div>
-
-  <script src="script.js"></script>
-  <script>
-    // Populate Class and Dorm dynamically from localStorage (added by admin)
-    document.addEventListener("DOMContentLoaded", function () {
-      let classes = JSON.parse(localStorage.getItem("classes")) || [];
-      let dorms = JSON.parse(localStorage.getItem("dorms")) || [];
-
-      let classSelect = document.getElementById("class");
-      let dormSelect = document.getElementById("dorm");
-
-      classes.forEach(cls => {
-        let option = document.createElement("option");
-        option.value = cls;
-        option.textContent = cls;
-        classSelect.appendChild(option);
-      });
-
-      dorms.forEach(dr => {
-        let option = document.createElement("option");
-        option.value = dr;
-        option.textContent = dr;
-        dormSelect.appendChild(option);
-      });
-    });
-  </script>
-</body>
-</html>
+  if (student) {
+    // Save logged-in user
+    localStorage.setItem("currentUser", JSON.stringify(student));
+    alert("Login successful!");
+    window.location.href = "dashboard.html"; // redirect to dashboard
+  } else {
+    alert("Invalid details! Please check your Admission No, Name, Class, and Dorm.");
+  }
+});
