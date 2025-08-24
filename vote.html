@@ -1,50 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Vote – St. Joseph's Kitale</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voting Page</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <header>
-    <h1>🗳️ Cast Your Vote</h1>
+    <h1>School Voting System</h1>
     <nav>
       <a href="dashboard.html">Dashboard</a>
       <a href="profile.html">Profile</a>
+      <a href="nominate.html">Nominate</a>
       <a href="results.html">Results</a>
-      <a href="#" id="logoutBtn">Logout</a>
+      <a href="index.html" onclick="logout()">Logout</a>
     </nav>
   </header>
 
   <main>
-    <div id="voteSection">
-      <h2>Available Positions</h2>
-      <div id="voteForms"></div>
-    </div>
+    <h2>Vote for Your Candidates</h2>
+    <div id="votingForm"></div>
   </main>
 
   <footer>
-    <p>© 2025 St. Joseph's Boys High School – Kitale</p>
+    <p>&copy; 2025 School Voting System</p>
   </footer>
 
+  <!-- Load script.js first -->
   <script src="script.js"></script>
   <script>
-    // Ensure student stays logged in
     const student = JSON.parse(localStorage.getItem("currentStudent"));
     if (!student) {
       alert("Please login first.");
       window.location.href = "index.html";
     } else {
-      // Load voting form only when logged in
-      loadVotingForm(student);
+      // ✅ Ensure student stays logged in when clicking vote
+      localStorage.setItem("currentStudent", JSON.stringify(student));
+      
+      // ✅ Only load the voting form after confirming login
+      loadVotingForm();
     }
-
-    // Proper logout binding (to prevent accidental logouts on vote click)
-    document.getElementById("logoutBtn").addEventListener("click", function (e) {
-      e.preventDefault();
-      logout();
-    });
   </script>
 </body>
 </html>
