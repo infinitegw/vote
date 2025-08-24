@@ -1,41 +1,40 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - School Voting System</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
   <div class="container">
-    <h2>🔑 Student Login</h2>
-    <input type="text" id="adm" placeholder="Admission Number">
-    <input type="text" id="name" placeholder="Full Name">
-    <button onclick="login()">Login</button>
-    <p>
-      Not registered? <a href="register.html">Register here</a> | 
-      <a href="index.html">🏠 Back to Home</a>
-    </p>
+    <h2>Student Login</h2>
+    <form id="loginForm">
+      <label for="admissionNo">Admission Number</label>
+      <input type="text" id="admissionNo" placeholder="Enter Admission Number" required>
+
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" placeholder="Enter Full Name" required>
+
+      <label for="class">Class</label>
+      <select id="class" required>
+        <option value="">Select Class</option>
+        <!-- Classes from admin will load here -->
+      </select>
+
+      <label for="dorm">Dorm</label>
+      <select id="dorm" required>
+        <option value="">Select Dorm</option>
+        <!-- Dorms from admin will load here -->
+      </select>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <p>Don’t have an account? <a href="register.html">Register here</a></p>
+    <p><a href="index.html">Back to Home</a></p>
   </div>
 
   <script src="script.js"></script>
-  <script>
-    function login() {
-      const adm = document.getElementById("adm").value.trim();
-      const name = document.getElementById("name").value.trim();
-      const students = JSON.parse(localStorage.getItem("students")) || [];
-
-      const student = students.find(
-        s => s.adm === adm && s.name.toLowerCase() === name.toLowerCase()
-      );
-
-      if (student) {
-        localStorage.setItem("loggedInStudent", JSON.stringify(student));
-        alert("✅ Login successful! Redirecting...");
-        window.location.href = "dashboard.html";
-      } else {
-        alert("❌ Invalid Admission Number or Name. Please try again.");
-      }
-    }
-  </script>
 </body>
 </html>
