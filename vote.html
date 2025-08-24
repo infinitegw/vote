@@ -1,45 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Voting Page</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>Vote</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body>
-  <header>
-    <h1>School Voting System</h1>
-    <nav>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="profile.html">Profile</a>
-      <a href="nominate.html">Nominate</a>
-      <a href="results.html">Results</a>
-      <a href="index.html" onclick="logout()">Logout</a>
-    </nav>
-  </header>
+<body onload="loadVotePage()">
+  <div class="container">
+    <h2>🗳️ Cast Your Vote</h2>
+    <div id="voteContainer"></div>
+    <p>
+      <a href="dashboard.html">⬅ Back to Dashboard</a>
+    </p>
+  </div>
 
-  <main>
-    <h2>Vote for Your Candidates</h2>
-    <div id="votingForm"></div>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 School Voting System</p>
-  </footer>
-
-  <!-- Load script.js first -->
   <script src="script.js"></script>
   <script>
-    const student = JSON.parse(localStorage.getItem("currentStudent"));
-    if (!student) {
-      alert("Please login first.");
-      window.location.href = "index.html";
-    } else {
-      // ✅ Ensure student stays logged in when clicking vote
-      localStorage.setItem("currentStudent", JSON.stringify(student));
-      
-      // ✅ Only load the voting form after confirming login
-      loadVotingForm();
+    function loadVotePage() {
+      // Check login
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      if (!currentUser) {
+        alert("You must login first!");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
+      const votes = JSON.parse(localStorage.getItem("votes")) || {};
+
+      let html = "";
+      const grouped = {};
+
+      // Group candidates by post
+      approved.forEach(c => {
+        if (!grouped[c.post]) grouped[c.post] = [];
+        grouped[c.post].push(c);
+      });
+
+      // Build UI
+      Object.keys(grouped).forEach(post => {
+        html += `<h3>${post}</h3><select id="vote_${post}">`;
+        html += `<option disabled selected>-- Select Candidate --</option>`;
+        grouped[post].forEach(c => {
+          html += `<option value="${c.name}">${c.name} (${c.class}, ${c.dorm})</option>`;
+        });
+        html += `</select><br><br>`;
+      });
+
+      html += `<button onclick="castVote()">Submit Vote</button>`;
+      document.getElementById("voteContainer").innerHTML = html;
+    }
+
+    function castVote() {
+      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
+      let votes = JSON.parse(localStorage.getItem("votes")) || {};
+
+      // Ensure votes object has user record
+      if (!votes[currentUser.adm]) votes[currentUser.adm] = {};
+
+      const grouped = {};
+      approved.forEach(c => {
+        if (!grouped[c.post]) grouped[c.post] = [];
+        grouped[c.post].push(c);
+      });
+
+      let votedSomething = false;
+
+      Object.keys(grouped).forEach(post => {
+        const select = document.getElementById("vote_" + post);
+        if (select && select.value && !votes[currentUser.adm][post]) {
+          votes[currentUser.adm][post] = select.value;
+          votedSomething = true;
+        }
+      });
+
+      if (!votedSomething) {
+        alert("You already voted or did not select any candidate!");
+        return;
+      }
+
+      localStorage.setItem("votes", JSON.stringify(votes));
+      alert("✅ Your vote has been recorded!");
+      window.location.href = "dashboard.html";
     }
   </script>
 </body>
