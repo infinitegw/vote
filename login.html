@@ -5,11 +5,21 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body>
+<body onload="loadLoginOptions()">
   <div class="container">
     <h2>🔑 Student Login</h2>
+
     <input type="text" id="adm" placeholder="Admission Number">
     <input type="text" id="name" placeholder="Full Name">
+
+    <!-- Class and Dorm dropdowns -->
+    <select id="class">
+      <option disabled selected>Loading Classes...</option>
+    </select>
+    <select id="dorm">
+      <option disabled selected>Loading Dorms...</option>
+    </select>
+
     <button onclick="login()">Login</button>
     <p>
       Not registered? <a href="register.html">Register here</a> | 
@@ -19,22 +29,18 @@
 
   <script src="script.js"></script>
   <script>
-    function login() {
-      const adm = document.getElementById("adm").value.trim();
-      const name = document.getElementById("name").value.trim();
-      const students = JSON.parse(localStorage.getItem("students")) || [];
+    // Load dynamic classes and dorms from localStorage
+    function loadLoginOptions() {
+      const classes = JSON.parse(localStorage.getItem("classes")) || [];
+      const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
 
-      const student = students.find(
-        s => s.adm === adm && s.name.toLowerCase() === name.toLowerCase()
-      );
+      document.getElementById("class").innerHTML =
+        `<option disabled selected>Select Class</option>` +
+        classes.map(c => `<option>${c}</option>`).join("");
 
-      if (student) {
-        localStorage.setItem("loggedInStudent", JSON.stringify(student));
-        alert("✅ Login successful! Redirecting...");
-        window.location.href = "dashboard.html";
-      } else {
-        alert("❌ Invalid Admission Number or Name. Please try again.");
-      }
+      document.getElementById("dorm").innerHTML =
+        `<option disabled selected>Select Dorm</option>` +
+        dorms.map(d => `<option>${d}</option>`).join("");
     }
   </script>
 </body>
