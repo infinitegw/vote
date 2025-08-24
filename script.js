@@ -742,3 +742,24 @@ window.onload = function() {
   populateOptions("class", "classes", "Select Class");
   populateOptions("dorm", "dorms", "Select Dorm");
 };
+/***********************
+ * VOTING PAGE LOADER  *
+ ***********************/
+function loadVotingPage() {
+  const user = requireLogin(); // ensure logged in
+  buildVotingUI("voteForms");
+
+  // Add submit button if not already present
+  const existingBtn = document.getElementById("submitVoteBtn");
+  if (!existingBtn) {
+    const btn = document.createElement("button");
+    btn.id = "submitVoteBtn";
+    btn.textContent = "Submit Votes";
+    btn.onclick = submitSelectedVotes;
+    document.getElementById("voteSection").appendChild(btn);
+  }
+
+  // Disable if deadline passed
+  disableVotingIfPastDeadline();
+}
+
