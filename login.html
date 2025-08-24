@@ -2,40 +2,69 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Login</title>
+  <title>Login - School Voting System</title>
   <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
+  <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="populateLoginDropdowns()">
+<body>
+  <header>
+    <h1>St. Joseph’s Boys High School Kitale</h1>
+    <h2>Student Login</h2>
+  </header>
 
   <div class="container">
-    <h2>Student Login</h2>
     <form id="loginForm">
-      
-      <!-- Username -->
-      <label for="loginUsername">Username</label>
-      <input type="text" id="loginUsername" required>
+      <label for="adm">Admission Number</label>
+      <input type="text" id="adm" required>
 
-      <!-- Class (Dynamic) -->
-      <label for="loginClass">Class</label>
-      <select id="loginClass" required>
-        <!-- Options will be loaded dynamically from localStorage -->
-      </select>
+      <label for="class">Class</label>
+      <select id="class" required></select>
 
-      <!-- Dorm (Dynamic) -->
-      <label for="loginDorm">Dorm</label>
-      <select id="loginDorm" required>
-        <!-- Options will be loaded dynamically from localStorage -->
-      </select>
+      <label for="dorm">Dorm</label>
+      <select id="dorm" required></select>
 
-      <!-- Login Button -->
       <button type="submit">Login</button>
     </form>
-
-    <p>Don’t have an account? <a href="register.html">Register here</a></p>
-    <p><a href="index.html">Back to Home</a></p>
+    <p style="text-align:center; margin-top: 20px;">
+      Not registered? <a href="register.html">Register Here</a> |
+      <a href="index.html">🏠 Back to Home</a>
+    </p>
   </div>
 
+  <script>
+    // Populate dropdowns dynamically
+    function populateDropdown(id, listName) {
+      const list = JSON.parse(localStorage.getItem(listName)) || [];
+      const select = document.getElementById(id);
+      select.innerHTML = `<option value="">--Select--</option>`;
+      list.forEach(item => {
+        select.innerHTML += `<option value="${item}">${item}</option>`;
+      });
+    }
+
+    // Load classes + dorms from admin
+    populateDropdown('class', 'classes');
+    populateDropdown('dorm', 'dorms');
+
+    // Handle login
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const adm = document.getElementById('adm').value.trim();
+      const studentClass = document.getElementById('class').value;
+      const dorm = document.getElementById('dorm').value;
+
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      // FIX: make sure keys match what register.html stored (adm, studentClass, dorm)
+      const user = students.find(s => s.adm === adm && s.studentClass === studentClass && s.dorm === dorm);
+
+      if (user) {
+        localStorage.setItem('loggedInUser', JSON.stringify(user));
+        alert('✅ Login successful');
+        window.location.href = 'dashboard.html';
+      } else {
+        alert('❌ Invalid login. Please check your details.');
+      }
+    });
+  </script>
 </body>
 </html>
