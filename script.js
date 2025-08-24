@@ -762,4 +762,26 @@ function loadVotingPage() {
   // Disable if deadline passed
   disableVotingIfPastDeadline();
 }
+function populateLoginDropdowns() {
+  let classes = JSON.parse(localStorage.getItem("classes")) || [];
+  let dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+
+  let classSelect = document.getElementById("loginClass");
+  let dormSelect = document.getElementById("loginDorm");
+
+  if (classSelect) {
+    classSelect.innerHTML = '<option value="">--Select Class--</option>';
+    classes.forEach(c => {
+      classSelect.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+  }
+
+  if (dormSelect) {
+    dormSelect.innerHTML = '<option value="">--Select Dorm--</option>';
+    dorms.forEach(d => {
+      dormSelect.innerHTML += `<option value="${d}">${d}</option>`;
+    });
+  }
+}
+
 
