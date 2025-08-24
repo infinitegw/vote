@@ -2,36 +2,94 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h2>Student Login</h2>
     <form id="loginForm">
-      <label for="admission">Admission No:</label>
-      <input type="text" id="admission" name="admission" required>
+      <div class="form-group">
+        <label for="admission">Admission Number</label>
+        <input type="text" id="admission" name="admission" placeholder="Enter Admission Number" required>
+      </div>
 
-      <label for="fullname">Full Name:</label>
-      <input type="text" id="fullname" name="fullname" required>
+      <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" placeholder="Enter Full Name" required>
+      </div>
 
-      <label for="class">Class:</label>
-      <select id="class" name="class" required></select>
+      <div class="form-group">
+        <label for="class">Class</label>
+        <select id="class" name="class" required>
+          <option value="">-- Select Class --</option>
+        </select>
+      </div>
 
-      <label for="dorm">Dorm:</label>
-      <select id="dorm" name="dorm" required></select>
+      <div class="form-group">
+        <label for="dorm">Dorm</label>
+        <select id="dorm" name="dorm" required>
+          <option value="">-- Select Dorm --</option>
+        </select>
+      </div>
 
-      <button type="submit">Login</button>
+      <button type="submit" class="btn">Login</button>
     </form>
+
     <p>Don’t have an account? <a href="register.html">Register here</a></p>
   </div>
 
   <script src="script.js"></script>
   <script>
-    // Ensure the form doesn’t refresh the page
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault(); // Stop page refresh
-      loginStudent();     // Call your script.js login function
+    // Populate Class and Dorm dynamically from localStorage
+    document.addEventListener("DOMContentLoaded", () => {
+      const classes = JSON.parse(localStorage.getItem("classes")) || [];
+      const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+
+      const classSelect = document.getElementById("class");
+      const dormSelect = document.getElementById("dorm");
+
+      classes.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls;
+        opt.textContent = cls;
+        classSelect.appendChild(opt);
+      });
+
+      dorms.forEach(dm => {
+        const opt = document.createElement("option");
+        opt.value = dm;
+        opt.textContent = dm;
+        dormSelect.appendChild(opt);
+      });
+    });
+
+    // Handle Login
+    document.getElementById("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const admission = document.getElementById("admission").value.trim();
+      const fullname = document.getElementById("fullname").value.trim();
+      const cls = document.getElementById("class").value;
+      const dorm = document.getElementById("dorm").value;
+
+      const students = JSON.parse(localStorage.getItem("students")) || [];
+
+      const student = students.find(s => 
+        s.admission === admission && 
+        s.fullname.toLowerCase() === fullname.toLowerCase() &&
+        s.class === cls &&
+        s.dorm === dorm
+      );
+
+      if (student) {
+        localStorage.setItem("loggedInStudent", JSON.stringify(student));
+        alert("Login successful!");
+        window.location.href = "dashboard.html";
+      } else {
+        alert("Invalid login details. Please try again.");
+      }
     });
   </script>
 </body>
