@@ -1,29 +1,38 @@
-// LOGIN HANDLER
-document.getElementById("loginForm")?.addEventListener("submit", function (e) {
-  e.preventDefault();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Student Login</h2>
+    <form id="loginForm">
+      <label for="admission">Admission No:</label>
+      <input type="text" id="admission" name="admission" required>
 
-  const admissionNo = document.getElementById("admissionNo").value.trim();
-  const fullName = document.getElementById("fullName").value.trim();
-  const className = document.getElementById("className").value;
-  const dorm = document.getElementById("dorm").value;
+      <label for="fullname">Full Name:</label>
+      <input type="text" id="fullname" name="fullname" required>
 
-  let students = JSON.parse(localStorage.getItem("students")) || [];
+      <label for="class">Class:</label>
+      <select id="class" name="class" required></select>
 
-  // Find matching student
-  const student = students.find(
-    (s) =>
-      s.admissionNo === admissionNo &&
-      s.fullName.toLowerCase() === fullName.toLowerCase() &&
-      s.className === className &&
-      s.dorm === dorm
-  );
+      <label for="dorm">Dorm:</label>
+      <select id="dorm" name="dorm" required></select>
 
-  if (student) {
-    // Save logged-in user
-    localStorage.setItem("currentUser", JSON.stringify(student));
-    alert("Login successful!");
-    window.location.href = "dashboard.html"; // redirect to dashboard
-  } else {
-    alert("Invalid details! Please check your Admission No, Name, Class, and Dorm.");
-  }
-});
+      <button type="submit">Login</button>
+    </form>
+    <p>Don’t have an account? <a href="register.html">Register here</a></p>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Ensure the form doesn’t refresh the page
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault(); // Stop page refresh
+      loginStudent();     // Call your script.js login function
+    });
+  </script>
+</body>
+</html>
