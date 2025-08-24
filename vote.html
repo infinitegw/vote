@@ -13,7 +13,7 @@
       <a href="dashboard.html">Dashboard</a>
       <a href="profile.html">Profile</a>
       <a href="results.html">Results</a>
-      <a href="#" onclick="logout()">Logout</a>
+      <a href="#" id="logoutBtn">Logout</a>
     </nav>
   </header>
 
@@ -30,23 +30,21 @@
 
   <script src="script.js"></script>
   <script>
-    // ✅ Check login session safely
-    let student = null;
-    try {
-      student = JSON.parse(localStorage.getItem("currentStudent"));
-    } catch (e) {
-      student = null;
-    }
-
-    if (!student || !student.name) {
+    // Ensure student stays logged in
+    const student = JSON.parse(localStorage.getItem("currentStudent"));
+    if (!student) {
       alert("Please login first.");
       window.location.href = "index.html";
     } else {
-      // ✅ Load the voting form only if logged in
-      if (typeof loadVotingForm === "function") {
-        loadVotingForm();
-      }
+      // Load voting form only when logged in
+      loadVotingForm(student);
     }
+
+    // Proper logout binding (to prevent accidental logouts on vote click)
+    document.getElementById("logoutBtn").addEventListener("click", function (e) {
+      e.preventDefault();
+      logout();
+    });
   </script>
 </body>
 </html>
