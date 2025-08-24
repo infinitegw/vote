@@ -1,26 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Student Dashboard</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body onload="loadStudentDashboard()">
-  <div class="container">
-    <h2>📋 Student Dashboard</h2>
-    <button onclick="location.href='vote.html'">🗳️ Vote</button>
-    <button onclick="location.href='nominate.html'">🏅 Nominate</button>
-    <button onclick="location.href='candidates.html'">👁️ View Contestants</button>
-    <button onclick="showStudentResults()">📊 View Results</button>
-    <button onclick="logout()">🚪 Logout</button>
+<body onload="checkLogin()">
+  <header>
+    <h1>Student Dashboard</h1>
+    <button onclick="logout()">Logout</button>
+  </header>
 
-    <div id="studentResults" style="margin-top: 30px; display: none;">
-      <h3>📈 Voting Results (Published)</h3>
-      <canvas id="studentChart" width="400" height="200"></canvas>
-    </div>
-  </div>
+  <main>
+    <p>Welcome, <span id="studentName"></span>!</p>
+    <nav>
+      <ul>
+        <li><a href="voting.html">Vote</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="results.html">Results</a></li>
+      </ul>
+    </nav>
+  </main>
 
-  <script src="script.js"></script>
+  <script>
+    function checkLogin() {
+      const student = JSON.parse(localStorage.getItem("loggedInStudent"));
+      if (!student) {
+        alert("You must log in first!");
+        window.location.href = "login.html";
+      } else {
+        document.getElementById("studentName").textContent = student.fullName;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInStudent");
+      window.location.href = "index.html"; // back to master/home page
+    }
+  </script>
 </body>
 </html>
