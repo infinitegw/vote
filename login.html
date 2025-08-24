@@ -1,63 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Vote</title>
+  <title>Login</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="checkLoginAndLoadCandidates()">
+<body>
   <div class="container">
-    <h2>🗳️ Cast Your Vote</h2>
-    <p id="welcome"></p>
-
-    <select id="post" onchange="loadCandidates()">
-      <option disabled selected>Select Post</option>
-    </select>
-
-    <div id="candidates"></div>
-
-    <button onclick="logout()">🚪 Logout</button>
-    <p><a href="dashboard.html">⬅ Back to Dashboard</a></p>
+    <h2>🔑 Student Login</h2>
+    <input type="text" id="adm" placeholder="Admission Number">
+    <input type="text" id="name" placeholder="Full Name">
+    <button onclick="login()">Login</button>
+    <p>
+      Not registered? <a href="register.html">Register here</a> | 
+      <a href="index.html">🏠 Back to Home</a>
+    </p>
   </div>
 
   <script src="script.js"></script>
   <script>
-    function checkLoginAndLoadCandidates() {
-      const currentStudent = JSON.parse(localStorage.getItem("currentStudent"));
-      if (!currentStudent) {
-        alert("You must log in first!");
-        window.location.href = "login.html";
-        return;
-      }
+    function login() {
+      const adm = document.getElementById("adm").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const students = JSON.parse(localStorage.getItem("students")) || [];
 
-      document.getElementById("welcome").innerText = 
-        "Welcome, " + currentStudent.name + " (" + currentStudent.adm + ")";
+      const student = students.find(
+        s => s.adm === adm && s.name.toLowerCase() === name.toLowerCase()
+      );
 
-      // Load posts from localStorage (set by admin)
-      const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      document.getElementById("post").innerHTML =
-        `<option disabled selected>Select Post</option>` +
-        posts.map(p => `<option>${p}</option>`).join("");
-    }
-
-    function loadCandidates() {
-      const post = document.getElementById("post").value;
-      const candidates = JSON.parse(localStorage.getItem("candidates")) || [];
-      const filtered = candidates.filter(c => c.post === post && c.approved);
-
-      let html = "";
-      if (filtered.length === 0) {
-        html = "<p>No candidates available for this post.</p>";
+      if (student) {
+        localStorage.setItem("loggedInStudent", JSON.stringify(student));
+        alert("✅ Login successful! Redirecting...");
+        window.location.href = "dashboard.html";
       } else {
-        html = filtered.map(c => `
-          <div class="card">
-            <h3>${c.name}</h3>
-            <p><b>Dorm:</b> ${c.dorm} | <b>Class:</b> ${c.class}</p>
-            <button onclick="castVote('${post}', '${c.name}')">Vote</button>
-          </div>
-        `).join("");
+        alert("❌ Invalid Admission Number or Name. Please try again.");
       }
-      document.getElementById("candidates").innerHTML = html;
     }
   </script>
 </body>
