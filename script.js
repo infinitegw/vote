@@ -826,3 +826,15 @@ function populateLoginDropdowns() {
     });
   }
 }
+
+const API_URL = "https://vote-4-33w7.onrender.com";
+
+
+async function registerStudent(admission, name, className, dorm) {
+  const res = await fetch(`${API_URL}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ admission, name, className, dorm })
+  });
+  return await res.json();
+}
