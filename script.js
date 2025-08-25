@@ -74,18 +74,38 @@ function register() {
   const photoInput = document.getElementById("photo");
 
   if (!adm || !name || !cls || !dorm || cls === "Select Class" || dorm === "Select Dorm") {
-    alert("⚠️ Please fill in all fields!"); return;
+    alert("⚠️ Please fill in all fields!"); 
+    return;
   }
 
   const students = load("students");
-  if (students.find(s => s.adm === adm)) {
+  
+  // Check if student already exists (case-insensitive)
+  const existingStudent = students.find(s => 
+    s.adm.toString().toLowerCase() === adm.toLowerCase()
+  );
+  
+  if (existingStudent) {
     alert("⚠️ A student with this Admission Number is already registered.");
     return;
   }
 
   const saveStudent = (photo) => {
-    students.push({ adm, name, class: cls, dorm, photo });
+    // Ensure consistent data format
+    const newStudent = {
+      adm: adm.toString(), // Ensure string format
+      name: name,
+      class: cls,
+      dorm: dorm,
+      photo: photo || ""
+    };
+    
+    students.push(newStudent);
     save("students", students);
+    
+    console.log("Registered student:", newStudent);
+    console.log("All students:", students);
+    
     addLog("register", `Student registered: ${name} (${adm})`, { adm, name });
     alert("✅ Registration successful! Please log in.");
     location.href = "login.html";
@@ -98,6 +118,7 @@ function register() {
   } else {
     saveStudent("");
   }
+}
 }
 
 function login() {
