@@ -46,12 +46,12 @@ function populateOptions(id, storageKey, placeholder = "Select") {
     list.map(item => `<option>${item}</option>`).join("");
 }
 
-// Logged-in user helpers
+// Logged-in user helpers - FIXED to use consistent key
 function getLoggedInUser() {
-  return JSON.parse(localStorage.getItem("loggedInUser"));
+  return JSON.parse(localStorage.getItem("loggedInStudent"));
 }
 function setLoggedInUser(u) {
-  localStorage.setItem("loggedInUser", JSON.stringify(u));
+  localStorage.setItem("loggedInStudent", JSON.stringify(u));
 }
 function requireLogin() {
   const u = getLoggedInUser();
@@ -59,8 +59,8 @@ function requireLogin() {
   return u;
 }
 function logout() {
-  localStorage.removeItem("loggedInUser");
-  location.href = "master.html";
+  localStorage.removeItem("loggedInStudent");
+  location.href = "index.html";
 }
 
 /***********************
@@ -101,8 +101,8 @@ function register() {
 }
 
 function login() {
-  const adm = document.getElementById("adm").value.trim();
-  const name = document.getElementById("name").value.trim();
+  const adm = document.getElementById("admission").value.trim();
+  const name = document.getElementById("fullname").value.trim();
   const cls = document.getElementById("class").value;
   const dorm = document.getElementById("dorm").value;
 
@@ -126,14 +126,12 @@ function login() {
  ***********************/
 function loadProfile() {
   const user = requireLogin();
-  document.getElementById("adm").innerText = user.adm;
-  document.getElementById("name").innerText = user.name;
-  document.getElementById("class").innerText = user.class;
-  document.getElementById("dorm").innerText = user.dorm;
+  document.getElementById("profileAdm").innerText = user.adm;
+  document.getElementById("profileName").innerText = user.name;
+  document.getElementById("profileClass").innerText = user.class;
+  document.getElementById("profileDorm").innerText = user.dorm;
   if (user.photo) {
-    const wrap = document.getElementById("photoWrapper");
-    const img = document.getElementById("photo");
-    if (wrap) wrap.style.display = "block";
+    const img = document.getElementById("profilePhoto");
     if (img) img.src = user.photo;
   }
 }
@@ -170,6 +168,24 @@ function loadStudentDashboard() {
 /***********************
  * NOMINATIONS         *
  ***********************/
+function loadNominationOptions() {
+  const user = getLoggedInUser();
+  if (!user) {
+    alert("Please log in first!");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Pre-fill name with logged-in user's name
+  const nameInput = document.getElementById("name");
+  if (nameInput) nameInput.value = user.name || "";
+  
+  // Populate dropdowns
+  populateOptions("position", "posts", "Select Position");
+  populateOptions("class", "classes", "Select Class");
+  populateOptions("dorm", "dorms", "Select Dorm");
+}
+
 function nominate() {
   const user = requireLogin();
   const name = document.getElementById("name").value.trim();
@@ -325,6 +341,10 @@ function disableVotingIfPastDeadline() {
  * RESULTS             *
  ***********************/
 let adminChartInstance = null;
+
+function loadResults() {
+  loadResultsInto("results", "resultsChart", "resultsWrapper", "noResults");
+}
 
 function loadResultsInto(resultsDivId, chartCanvasId, wrapperId, noResultsId) {
   const published = localStorage.getItem("resultsPublished") === "true";
@@ -742,6 +762,7 @@ window.onload = function() {
   populateOptions("class", "classes", "Select Class");
   populateOptions("dorm", "dorms", "Select Dorm");
 };
+
 /***********************
  * VOTING PAGE LOADER  *
  ***********************/
@@ -762,6 +783,7 @@ function loadVotingPage() {
   // Disable if deadline passed
   disableVotingIfPastDeadline();
 }
+
 function populateLoginDropdowns() {
   let classes = JSON.parse(localStorage.getItem("classes")) || [];
   let dorms = JSON.parse(localStorage.getItem("dorms")) || [];
@@ -783,5 +805,3 @@ function populateLoginDropdowns() {
     });
   }
 }
-
-
