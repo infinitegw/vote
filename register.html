@@ -3,7 +3,6 @@
 <head>
   <title>Register</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body onload="loadRegistrationOptions()">
   <div class="container">
@@ -12,11 +11,13 @@
     <input type="text" id="name" placeholder="Full Name">
     <select id="class"><option disabled selected>Loading Classes...</option></select>
     <select id="dorm"><option disabled selected>Loading Dorms...</option></select>
-    <button onclick="register()">Register</button>
-    <p>
-      Already registered? <a href="login.html">Login here</a> | 
-      <a href="index.html">🏠 Back to Home</a>
-    </p>
+    <div class="form-group">
+  <label for="photo">Student Photo (Optional)</label>
+  <input type="file" id="photo" name="photo" accept="image/*">
+</div>
+<button onclick="register()">Register</button>
+    <p>Already registered? <a href="index.html">Login here</a>
+    <a href="index.html">🏠 Back to Home</a></p>
   </div>
 
   <script src="script.js"></script>
@@ -36,4 +37,3 @@
   </script>
 </body>
 </html>
-
