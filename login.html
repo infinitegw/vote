@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Login</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="logo.png" type="image/png">
 </head>
 <body>
   <div class="container">
@@ -37,7 +38,8 @@
       <button type="submit" class="btn">Login</button>
     </form>
 
-    <p>Don’t have an account? <a href="register.html">Register here</a></p>
+    <p>Don't have an account? <a href="register.html">Register here</a></p>
+    <p><a href="index.html">🏠 Back to Home</a></p>
   </div>
 
   <script src="script.js"></script>
@@ -50,19 +52,25 @@
       const classSelect = document.getElementById("class");
       const dormSelect = document.getElementById("dorm");
 
-      classes.forEach(cls => {
-        const opt = document.createElement("option");
-        opt.value = cls;
-        opt.textContent = cls;
-        classSelect.appendChild(opt);
-      });
+      if (classSelect) {
+        classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+        classes.forEach(cls => {
+          const opt = document.createElement("option");
+          opt.value = cls;
+          opt.textContent = cls;
+          classSelect.appendChild(opt);
+        });
+      }
 
-      dorms.forEach(dm => {
-        const opt = document.createElement("option");
-        opt.value = dm;
-        opt.textContent = dm;
-        dormSelect.appendChild(opt);
-      });
+      if (dormSelect) {
+        dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
+        dorms.forEach(dm => {
+          const opt = document.createElement("option");
+          opt.value = dm;
+          opt.textContent = dm;
+          dormSelect.appendChild(opt);
+        });
+      }
     });
 
     // Handle Login
@@ -74,11 +82,17 @@
       const cls = document.getElementById("class").value;
       const dorm = document.getElementById("dorm").value;
 
+      // Validate all fields are filled
+      if (!admission || !fullname || !cls || !dorm || cls === "-- Select Class --" || dorm === "-- Select Dorm --") {
+        alert("Please fill in all fields!");
+        return;
+      }
+
       const students = JSON.parse(localStorage.getItem("students")) || [];
 
       const student = students.find(s => 
-        s.admission === admission && 
-        s.fullname.toLowerCase() === fullname.toLowerCase() &&
+        s.adm === admission && 
+        s.name.toLowerCase() === fullname.toLowerCase() &&
         s.class === cls &&
         s.dorm === dorm
       );
@@ -88,7 +102,7 @@
         alert("Login successful!");
         window.location.href = "dashboard.html";
       } else {
-        alert("Invalid login details. Please try again.");
+        alert("Invalid login details. Please try again or register if you haven't.");
       }
     });
   </script>
