@@ -119,7 +119,7 @@ function register() {
     saveStudent("");
   }
 }
-}
+
 
 function login() {
   const adm = document.getElementById("admission").value.trim();
