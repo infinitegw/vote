@@ -8,175 +8,92 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public")); // serve frontend files
 
-// Database file
+// Database file (simple JSON store for now)
 const DB_FILE = "./db.json";
 
 // Initialize db.json if missing
 if (!fs.existsSync(DB_FILE)) {
   fs.writeFileSync(
     DB_FILE,
-    JSON.stringify(
-      {
-        adminPassword: "admin123", // ✅ default admin password
-        academicYear: "",
-        deadline: "",
-        classes: [],
-        dorms: [],
-        posts: [],
-        candidates: [],
-        students: [],
-        votes: {}
-      },
-      null,
-      2
-    )
+    JSON.stringify({ students: [], classes: [], dorms: [], votes: [] }, null, 2)
   );
 }
 
-// Helpers
-function readDB() {
-  return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
-}
-function writeDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
-}
+// Helper to load/save database
+const loadDB = () => JSON.parse(fs.readFileSync(DB_FILE));
+const saveDB = (db) => fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 
-/* ---------------------- ADMIN ROUTES ---------------------- */
+// Register student
+app.post("/register", (req, res) => {
+  const db = loadDB();
+  const { admission, name, className, dorm } = req.body;
 
-// ✅ Admin login
-app.post("/api/admin/login", (req, res) => {
-  const db = readDB();
-  if (req.body.password === db.adminPassword) {
-    res.json({ success: true });
-  } else {
-    res.json({ success: false });
-  }
-});
-
-// ✅ Change admin password
-app.post("/api/admin/change-password", (req, res) => {
-  const db = readDB();
-  const { oldPass, newPass } = req.body;
-
-  if (oldPass !== db.adminPassword) {
-    return res.json({ success: false, msg: "Old password is incorrect" });
+  if (db.students.find((s) => s.admission === admission)) {
+    return res.status(400).json({ message: "Student already registered" });
   }
 
-  db.adminPassword = newPass;
-  writeDB(db);
-  res.json({ success: true, msg: "Password changed successfully" });
+  db.students.push({ admission, name, className, dorm });
+  saveDB(db);
+  res.json({ message: "Registered successfully" });
 });
 
-// ✅ Set academic year
-app.post("/api/admin/year", (req, res) => {
-  const db = readDB();
-  db.academicYear = req.body.year;
-  writeDB(db);
-  res.json({ success: true, year: db.academicYear });
-});
+// Login
+app.post("/login", (req, res) => {
+  const db = loadDB();
+  const { admission, name, className, dorm } = req.body;
 
-// ✅ Set deadline
-app.post("/api/admin/deadline", (req, res) => {
-  const db = readDB();
-  db.deadline = req.body.deadline;
-  writeDB(db);
-  res.json({ success: true, deadline: db.deadline });
-});
-
-/* ---------------------- DATA ROUTES ---------------------- */
-
-// ✅ Get all data
-app.get("/api/data", (req, res) => {
-  res.json(readDB());
-});
-
-// ✅ Add class
-app.post("/api/class", (req, res) => {
-  const db = readDB();
-  if (!db.classes.includes(req.body.name)) {
-    db.classes.push(req.body.name);
-    writeDB(db);
-  }
-  res.json(db.classes);
-});
-
-// ✅ Add dorm
-app.post("/api/dorm", (req, res) => {
-  const db = readDB();
-  if (!db.dorms.includes(req.body.name)) {
-    db.dorms.push(req.body.name);
-    writeDB(db);
-  }
-  res.json(db.dorms);
-});
-
-// ✅ Add post
-app.post("/api/post", (req, res) => {
-  const db = readDB();
-  if (!db.posts.includes(req.body.name)) {
-    db.posts.push(req.body.name);
-    writeDB(db);
-  }
-  res.json(db.posts);
-});
-
-// ✅ Add candidate
-app.post("/api/candidate", (req, res) => {
-  const db = readDB();
-  const { name, post, className, dorm } = req.body;
-
-  // prevent duplicate candidates
-  const exists = db.candidates.find(
-    (c) =>
-      c.name === name &&
-      c.post === post &&
-      c.className === className &&
-      c.dorm === dorm
+  const student = db.students.find(
+    (s) =>
+      s.admission === admission &&
+      s.name === name &&
+      s.className === className &&
+      s.dorm === dorm
   );
 
-  if (!exists) {
-    db.candidates.push(req.body);
-    writeDB(db);
-    return res.json({ success: true, candidates: db.candidates });
+  if (!student) {
+    return res.status(401).json({ message: "Invalid login" });
   }
 
-  res.json({ success: false, msg: "Candidate already exists" });
+  res.json({ message: "Login successful", student });
 });
 
-/* ---------------------- STUDENT ROUTES ---------------------- */
+// Add class
+app.post("/add-class", (req, res) => {
+  const db = loadDB();
+  const { className } = req.body;
 
-// ✅ Register student
-app.post("/api/register", (req, res) => {
-  const db = readDB();
-  const exists = db.students.find((s) => s.adm === req.body.adm);
-  if (!exists) {
-    db.students.push(req.body);
-    writeDB(db);
-    res.json({ success: true });
-  } else {
-    res.json({ success: false, msg: "Student already registered" });
+  if (!db.classes.includes(className)) {
+    db.classes.push(className);
+    saveDB(db);
   }
+
+  res.json({ message: "Class added", classes: db.classes });
 });
 
-// ✅ Cast vote
-app.post("/api/vote", (req, res) => {
-  const db = readDB();
-  const { adm, post, candidate } = req.body;
+// Get classes/dorms/students
+app.get("/classes", (req, res) => res.json(loadDB().classes));
+app.get("/dorms", (req, res) => res.json(loadDB().dorms));
+app.get("/students", (req, res) => res.json(loadDB().students));
 
-  if (!db.votes[adm]) db.votes[adm] = {};
-  db.votes[adm][post] = candidate;
+// Vote
+app.post("/vote", (req, res) => {
+  const db = loadDB();
+  const { admission, post, candidate } = req.body;
 
-  writeDB(db);
-  res.json({ success: true });
+  if (db.votes.find((v) => v.admission === admission && v.post === post)) {
+    return res.status(400).json({ message: "Already voted for this post" });
+  }
+
+  db.votes.push({ admission, post, candidate });
+  saveDB(db);
+
+  res.json({ message: "Vote cast successfully" });
 });
 
-// ✅ Get results
-app.get("/api/results", (req, res) => {
-  const db = readDB();
-  res.json(db.votes);
-});
+// Get votes (for admin/results)
+app.get("/votes", (req, res) => res.json(loadDB().votes));
 
-/* ---------------------- START SERVER ---------------------- */
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`✅ Server running on port ${PORT}`);
+});
