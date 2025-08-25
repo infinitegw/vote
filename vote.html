@@ -5,10 +5,23 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="logo.png">
 </head>
-<body onload="loadVotePage()">
+<body onload="checkLoginAndLoadVotePage()">
   <div class="container">
     <h2>🗳️ Cast Your Vote</h2>
+    
+    <div id="loginCheck" style="display: none; background: #ffe6e6; padding: 15px; border-radius: 5px; margin: 10px 0;">
+      <p>⚠️ You must be logged in to vote.</p>
+      <button onclick="window.location.href='login.html'">Go to Login</button>
+    </div>
+    
     <div id="voteContainer"></div>
+    
+    <div id="deadlineMessage" style="display: none; background: #fff3cd; padding: 15px; border-radius: 5px; margin: 10px 0;">
+      <p>⏰ Voting deadline has passed. You can no longer vote.</p>
+    </div>
+    
+    <button id="submitVoteBtn" onclick="submitSelectedVotes()" style="display: none;">Submit Votes</button>
+    
     <p>
       <a href="dashboard.html">⬅ Back to Dashboard</a>
     </p>
@@ -16,75 +29,168 @@
 
   <script src="script.js"></script>
   <script>
-    function loadVotePage() {
-      // Check login
-      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    function checkLoginAndLoadVotePage() {
+      console.log("Checking login status for voting...");
+      
+      // Check if user is logged in using the CORRECT key
+      const currentUser = JSON.parse(localStorage.getItem("loggedInStudent"));
+      
       if (!currentUser) {
-        alert("You must login first!");
-        window.location.href = "login.html";
+        console.log("No user logged in - showing login message");
+        document.getElementById("loginCheck").style.display = "block";
+        document.getElementById("voteContainer").innerHTML = "<p>Please login first to vote.</p>";
+        return;
+      }
+      
+      console.log("User logged in:", currentUser.name);
+      document.getElementById("loginCheck").style.display = "none";
+      
+      // Now load the voting page
+      loadVotePage();
+    }
+
+    function loadVotePage() {
+      const user = JSON.parse(localStorage.getItem("loggedInStudent"));
+      if (!user) {
+        console.error("User disappeared during page load!");
         return;
       }
 
-      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
-      const votes = JSON.parse(localStorage.getItem("votes")) || {};
+      console.log("Loading voting page for:", user.name);
+      
+      const approved = JSON.parse(localStorage.getItem("candidates")) || [];
+      const votes = JSON.parse(localStorage.getItem("votes")) || [];
+
+      // Check if user has already voted
+      const userVotes = votes.filter(v => v.adm === user.adm);
+      if (userVotes.length > 0) {
+        document.getElementById("voteContainer").innerHTML = `
+          <div style="background: #eaf9ea; padding: 20px; border-radius: 8px; text-align: center;">
+            <h3>✅ You have already voted!</h3>
+            <p>You voted for ${userVotes.length} position(s).</p>
+            <p>Thank you for participating in the election.</p>
+          </div>
+        `;
+        return;
+      }
 
       let html = "";
       const grouped = {};
 
-      // Group candidates by post
+      // Group candidates by position (only approved ones)
       approved.forEach(c => {
-        if (!grouped[c.post]) grouped[c.post] = [];
-        grouped[c.post].push(c);
+        if (c.approved) {
+          if (!grouped[c.position]) grouped[c.position] = [];
+          grouped[c.position].push(c);
+        }
       });
 
       // Build UI
-      Object.keys(grouped).forEach(post => {
-        html += `<h3>${post}</h3><select id="vote_${post}">`;
-        html += `<option disabled selected>-- Select Candidate --</option>`;
-        grouped[post].forEach(c => {
-          html += `<option value="${c.name}">${c.name} (${c.class}, ${c.dorm})</option>`;
-        });
-        html += `</select><br><br>`;
+      Object.keys(grouped).forEach(position => {
+        const safeId = position.replace(/\s+/g, '_');
+        html += `<div class="voteBox">
+          <h3>${position}</h3>
+          <select id="vote_${safeId}">
+            <option value="" disabled selected>-- Select Candidate --</option>
+            ${grouped[position].map(c => 
+              `<option value="${c.name}">${c.name} (${c.class}, ${c.dorm})</option>`
+            ).join("")}
+          </select>
+        </div>`;
       });
 
-      html += `<button onclick="castVote()">Submit Vote</button>`;
+      if (Object.keys(grouped).length === 0) {
+        html = "<p>No voting positions available at this time. Check back later.</p>";
+      } else {
+        document.getElementById("submitVoteBtn").style.display = "block";
+      }
+      
       document.getElementById("voteContainer").innerHTML = html;
+
+      // Check voting deadline
+      disableVotingIfPastDeadline();
     }
 
-    function castVote() {
-      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-      const approved = JSON.parse(localStorage.getItem("approvedCandidates")) || [];
-      let votes = JSON.parse(localStorage.getItem("votes")) || {};
+    function submitSelectedVotes() {
+      const user = JSON.parse(localStorage.getItem("loggedInStudent"));
+      if (!user) {
+        alert("You must be logged in to vote!");
+        window.location.href = "login.html";
+        return;
+      }
 
-      // Ensure votes object has user record
-      if (!votes[currentUser.adm]) votes[currentUser.adm] = {};
+      const approved = JSON.parse(localStorage.getItem("candidates")) || [];
+      let votes = JSON.parse(localStorage.getItem("votes")) || [];
+
+      // Check if user has already voted
+      const userVotes = votes.filter(v => v.adm === user.adm);
+      if (userVotes.length > 0) {
+        alert("You have already voted!");
+        window.location.href = "dashboard.html";
+        return;
+      }
 
       const grouped = {};
       approved.forEach(c => {
-        if (!grouped[c.post]) grouped[c.post] = [];
-        grouped[c.post].push(c);
+        if (c.approved && !grouped[c.position]) {
+          grouped[c.position] = [];
+          grouped[c.position].push(c);
+        }
       });
 
+      let newVotes = [];
       let votedSomething = false;
 
-      Object.keys(grouped).forEach(post => {
-        const select = document.getElementById("vote_" + post);
-        if (select && select.value && !votes[currentUser.adm][post]) {
-          votes[currentUser.adm][post] = select.value;
+      Object.keys(grouped).forEach(position => {
+        const safeId = position.replace(/\s+/g, '_');
+        const select = document.getElementById("vote_" + safeId);
+        if (select && select.value) {
+          newVotes.push({
+            adm: user.adm,
+            name: user.name,
+            position: position,
+            votedFor: select.value,
+            time: new Date().toISOString()
+          });
           votedSomething = true;
         }
       });
 
       if (!votedSomething) {
-        alert("You already voted or did not select any candidate!");
+        alert("Please select at least one candidate to vote!");
         return;
       }
 
-      localStorage.setItem("votes", JSON.stringify(votes));
-      alert("✅ Your vote has been recorded!");
+      // Save all votes
+      const allVotes = [...votes, ...newVotes];
+      localStorage.setItem("votes", JSON.stringify(allVotes));
+      
+      alert("✅ Your vote has been recorded! Thank you for voting.");
       window.location.href = "dashboard.html";
+    }
+
+    // Check voting deadline function
+    function disableVotingIfPastDeadline() {
+      const deadline = localStorage.getItem("votingDeadline");
+      const voteBtn = document.getElementById("submitVoteBtn");
+      const deadlineMsg = document.getElementById("deadlineMessage");
+      
+      if (!deadline) return;
+
+      const now = new Date();
+      const end = new Date(deadline);
+
+      if (now >= end) {
+        if (voteBtn) {
+          voteBtn.disabled = true;
+          voteBtn.innerText = "Voting Closed";
+          voteBtn.style.backgroundColor = "#ccc";
+        }
+        if (deadlineMsg) {
+          deadlineMsg.style.display = "block";
+        }
+      }
     }
   </script>
 </body>
 </html>
-
