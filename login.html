@@ -13,24 +13,24 @@
     <form id="loginForm">
       <div class="form-group">
         <label for="admission">Admission Number</label>
-        <input type="text" id="admission" name="admission" placeholder="Enter Admission Number" required>
+        <input type="text" id="admission" required>
       </div>
 
       <div class="form-group">
         <label for="fullname">Full Name</label>
-        <input type="text" id="fullname" name="fullname" placeholder="Enter Full Name" required>
+        <input type="text" id="fullname" required>
       </div>
 
       <div class="form-group">
         <label for="class">Class</label>
-        <select id="class" name="class" required>
+        <select id="class" required>
           <option value="">-- Select Class --</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="dorm">Dorm</label>
-        <select id="dorm" name="dorm" required>
+        <select id="dorm" required>
           <option value="">-- Select Dorm --</option>
         </select>
       </div>
@@ -42,40 +42,34 @@
     <p><a href="index.html">🏠 Back to Home</a></p>
   </div>
 
-  <script src="script.js"></script>
   <script>
-  // Populate Class and Dorm dynamically from localStorage
+  // Load classes and dorms
   document.addEventListener("DOMContentLoaded", () => {
-    const classes = JSON.parse(localStorage.getItem("classes")) || [];
-    const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+    const classes = JSON.parse(localStorage.getItem("classes")) || ["Form One", "Form Two"];
+    const dorms = JSON.parse(localStorage.getItem("dorms")) || ["Sent Pole", "Wilson Peters"];
 
     const classSelect = document.getElementById("class");
     const dormSelect = document.getElementById("dorm");
 
-    if (classSelect) {
-      classSelect.innerHTML = '<option value="">-- Select Class --</option>';
-      classes.forEach(cls => {
-        const opt = document.createElement("option");
-        opt.value = cls;
-        opt.textContent = cls;
-        classSelect.appendChild(opt);
-      });
-    }
+    classes.forEach(cls => {
+      const opt = document.createElement("option");
+      opt.value = cls;
+      opt.textContent = cls;
+      classSelect.appendChild(opt);
+    });
 
-    if (dormSelect) {
-      dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
-      dorms.forEach(dm => {
-        const opt = document.createElement("option");
-        opt.value = dm;
-        opt.textContent = dm;
-        dormSelect.appendChild(opt);
-      });
-    }
+    dorms.forEach(dm => {
+      const opt = document.createElement("option");
+      opt.value = dm;
+      opt.textContent = dm;
+      dormSelect.appendChild(opt);
+    });
   });
 
-  // Handle Login - FIXED VERSION
+  // Handle login
   document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault();
+    e.preventDefault(); // ✅ prevent refresh
+    console.log("Login button clicked");
 
     const admission = document.getElementById("admission").value.trim();
     const fullname = document.getElementById("fullname").value.trim();
@@ -88,11 +82,11 @@
     }
 
     const students = JSON.parse(localStorage.getItem("students")) || [];
+    console.log("Students in storage:", students);
 
-    // Match with correct property names
     const student = students.find(s =>
-      s.admissionNumber.toLowerCase() === admission.toLowerCase() &&
-      s.fullName.toLowerCase() === fullname.toLowerCase() &&
+      s.admissionNumber?.toLowerCase() === admission.toLowerCase() &&
+      s.fullName?.toLowerCase() === fullname.toLowerCase() &&
       s.className === cls &&
       s.dorm === dorm
     );
