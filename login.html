@@ -3,102 +3,673 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Login</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="logo.png" type="image/png">
+  <title>St. Joseph's Boys High School - Voting System</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 500px;
+      width: 100%;
+      background: rgba(26, 32, 44, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      margin: 20px 0;
+      border: 1px solid #4a5568;
+    }
+    
+    header {
+      background: linear-gradient(90deg, #4c51bf 0%, #667eea 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+    }
+    
+    h2 {
+      font-size: 1.3rem;
+      opacity: 0.9;
+    }
+    
+    form {
+      padding: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #90cdf4;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #4a5568;
+      border-radius: 8px;
+      background-color: #2d3748;
+      color: #e2e8f0;
+      font-size: 16px;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: #4c51bf;
+      box-shadow: 0 0 0 3px rgba(76, 81, 191, 0.3);
+    }
+    
+    button {
+      width: 100%;
+      background: #4c51bf;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+      transition: background 0.3s;
+      font-weight: 600;
+    }
+    
+    button:hover {
+      background: #5a67d8;
+    }
+    
+    .links {
+      text-align: center;
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid #4a5568;
+    }
+    
+    .links a {
+      color: #63b3ed;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    
+    .links a:hover {
+      text-decoration: underline;
+    }
+    
+    .notification {
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+    }
+    
+    .success {
+      background-color: #2f855a;
+      color: white;
+    }
+    
+    .error {
+      background-color: #c53030;
+      color: white;
+    }
+    
+    .demo-accounts {
+      margin-top: 30px;
+      padding: 20px;
+      background: #2d3748;
+      border-radius: 10px;
+      border: 1px solid #4a5568;
+    }
+    
+    .demo-accounts h3 {
+      margin-bottom: 15px;
+      color: #81e6d9;
+      text-align: center;
+    }
+    
+    .demo-account {
+      background: #1a202c;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-family: monospace;
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #a0aec0;
+      font-size: 0.9rem;
+      margin-top: 30px;
+    }
+    
+    /* Dashboard styles */
+    .dashboard {
+      padding: 30px;
+    }
+    
+    .user-info {
+      background: #2d3748;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+    
+    .user-info h3 {
+      color: #81e6d9;
+      margin-bottom: 15px;
+    }
+    
+    .candidate-list {
+      margin-top: 20px;
+    }
+    
+    .candidate {
+      background: #2d3748;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .candidate-info {
+      flex-grow: 1;
+    }
+    
+    .candidate-name {
+      font-weight: 600;
+      color: #90cdf4;
+    }
+    
+    .candidate-position {
+      color: #a0aec0;
+      font-size: 0.9rem;
+    }
+    
+    .vote-btn {
+      width: auto;
+      padding: 10px 20px;
+    }
+    
+    .logout-btn {
+      background: #c53030;
+      width: auto;
+      padding: 10px 20px;
+      margin-top: 20px;
+    }
+    
+    .logout-btn:hover {
+      background: #e53e3e;
+    }
+    
+    /* Registration styles */
+    .registration-form {
+      padding: 30px;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Student Login</h2>
+  <!-- Login Page -->
+  <div id="loginPage" class="container">
+    <header>
+      <h1>St. Joseph's Boys High School Kitale</h1>
+      <h2>Student Login</h2>
+    </header>
+
+    <div class="notification" id="notification"></div>
+
     <form id="loginForm">
       <div class="form-group">
-        <label for="admission">Admission Number</label>
-        <input type="text" id="admission" required>
-      </div>
-
-      <div class="form-group">
-        <label for="fullname">Full Name</label>
-        <input type="text" id="fullname" required>
+        <label for="adm">Admission Number</label>
+        <input type="text" id="adm" required placeholder="Enter your admission number">
       </div>
 
       <div class="form-group">
         <label for="class">Class</label>
         <select id="class" required>
-          <option value="">-- Select Class --</option>
+          <option value="">Select your class</option>
         </select>
       </div>
 
       <div class="form-group">
         <label for="dorm">Dorm</label>
         <select id="dorm" required>
-          <option value="">-- Select Dorm --</option>
+          <option value="">Select your dorm</option>
         </select>
       </div>
 
-      <button type="submit" class="btn">Login</button>
+      <button type="submit">Login</button>
     </form>
-
-    <p>Don't have an account? <a href="register.html">Register here</a></p>
-    <p><a href="index.html">🏠 Back to Home</a></p>
+    
+    <div class="links">
+      <a href="#" id="showRegister">Register Here</a> | 
+      <a href="#" id="showDashboard">Dashboard (Demo)</a>
+    </div>
   </div>
 
+  <!-- Registration Page (Hidden by default) -->
+  <div id="registerPage" class="container" style="display: none;">
+    <header>
+      <h1>St. Joseph's Boys High School Kitale</h1>
+      <h2>Student Registration</h2>
+    </header>
+
+    <div class="notification" id="regNotification"></div>
+
+    <form id="registerForm" class="registration-form">
+      <div class="form-group">
+        <label for="regAdm">Admission Number</label>
+        <input type="text" id="regAdm" required placeholder="Enter your admission number">
+      </div>
+
+      <div class="form-group">
+        <label for="regName">Full Name</label>
+        <input type="text" id="regName" required placeholder="Enter your full name">
+      </div>
+
+      <div class="form-group">
+        <label for="regClass">Class</label>
+        <select id="regClass" required>
+          <option value="">Select your class</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="regDorm">Dorm</label>
+        <select id="regDorm" required>
+          <option value="">Select your dorm</option>
+        </select>
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
+    
+    <div class="links">
+      <a href="#" id="showLogin">Back to Login</a>
+    </div>
+  </div>
+
+  <!-- Dashboard Page (Hidden by default) -->
+  <div id="dashboardPage" class="container" style="display: none;">
+    <header>
+      <h1>St. Joseph's Boys High School Kitale</h1>
+      <h2>Student Dashboard</h2>
+    </header>
+
+    <div class="dashboard">
+      <div class="user-info">
+        <h3>Student Information</h3>
+        <p><strong>Name:</strong> <span id="userName"></span></p>
+        <p><strong>Admission No:</strong> <span id="userAdm"></span></p>
+        <p><strong>Class:</strong> <span id="userClass"></span></p>
+        <p><strong>Dorm:</strong> <span id="userDorm"></span></p>
+        <p><strong>Voting Status:</strong> <span id="votingStatus"></span></p>
+      </div>
+
+      <h3>School Captain Candidates</h3>
+      <div class="candidate-list" id="candidateList">
+        <!-- Candidates will be added here dynamically -->
+      </div>
+
+      <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div class="demo-accounts">
+    <h3>Demo Accounts (for testing)</h3>
+    <div class="demo-account">Adm: 1234, Class: Form 1 East, Dorm: Mandela</div>
+    <div class="demo-account">Adm: 5678, Class: Form 2 West, Dorm: Obama</div>
+    <div class="demo-account">Adm: 9012, Class: Form 3 North, Dorm: Lincoln</div>
+  </div>
+
+  <footer>
+    <p>School Voting System &copy; 2023</p>
+  </footer>
+
   <script>
-  // Load classes and dorms
-  document.addEventListener("DOMContentLoaded", () => {
-    const classes = JSON.parse(localStorage.getItem("classes")) || ["Form One", "Form Two"];
-    const dorms = JSON.parse(localStorage.getItem("dorms")) || ["Sent Pole", "Wilson Peters"];
+    // Sample data for testing if localStorage is empty
+    const sampleData = {
+      classes: ['Form 1 East', 'Form 1 West', 'Form 2 East', 'Form 2 West', 'Form 3 East', 'Form 3 West', 'Form 4 East', 'Form 4 West'],
+      dorms: ['Mandela', 'Obama', 'Lincoln', 'Gandhi', 'Kennedy', 'Nyerere'],
+      students: [
+        { adm: '1234', name: 'John Doe', class: 'Form 1 East', dorm: 'Mandela', hasVoted: false },
+        { adm: '5678', name: 'Jane Smith', class: 'Form 2 West', dorm: 'Obama', hasVoted: false },
+        { adm: '9012', name: 'Mike Johnson', class: 'Form 3 North', dorm: 'Lincoln', hasVoted: false }
+      ],
+      candidates: [
+        { id: 1, name: 'David Omondi', position: 'School Captain', votes: 0 },
+        { id: 2, name: 'Sarah Auma', position: 'School Captain', votes: 0 },
+        { id: 3, name: 'Peter Kamau', position: 'School Captain', votes: 0 }
+      ]
+    };
 
-    const classSelect = document.getElementById("class");
-    const dormSelect = document.getElementById("dorm");
-
-    classes.forEach(cls => {
-      const opt = document.createElement("option");
-      opt.value = cls;
-      opt.textContent = cls;
-      classSelect.appendChild(opt);
-    });
-
-    dorms.forEach(dm => {
-      const opt = document.createElement("option");
-      opt.value = dm;
-      opt.textContent = dm;
-      dormSelect.appendChild(opt);
-    });
-  });
-
-  // Handle login
-  document.getElementById("loginForm").addEventListener("submit", (e) => {
-    e.preventDefault(); // ✅ prevent refresh
-    console.log("Login button clicked");
-
-    const admission = document.getElementById("admission").value.trim();
-    const fullname = document.getElementById("fullname").value.trim();
-    const cls = document.getElementById("class").value;
-    const dorm = document.getElementById("dorm").value;
-
-    if (!admission || !fullname || !cls || !dorm) {
-      alert("Please fill in all fields!");
-      return;
+    // Initialize data if not exists
+    function initializeData() {
+      if (!localStorage.getItem('classes')) {
+        localStorage.setItem('classes', JSON.stringify(sampleData.classes));
+      }
+      
+      if (!localStorage.getItem('dorms')) {
+        localStorage.setItem('dorms', JSON.stringify(sampleData.dorms));
+      }
+      
+      if (!localStorage.getItem('students')) {
+        localStorage.setItem('students', JSON.stringify(sampleData.students));
+      }
+      
+      if (!localStorage.getItem('candidates')) {
+        localStorage.setItem('candidates', JSON.stringify(sampleData.candidates));
+      }
     }
 
-    const students = JSON.parse(localStorage.getItem("students")) || [];
-    console.log("Students in storage:", students);
-
-    const student = students.find(s =>
-      s.admissionNumber?.toLowerCase() === admission.toLowerCase() &&
-      s.fullName?.toLowerCase() === fullname.toLowerCase() &&
-      s.className === cls &&
-      s.dorm === dorm
-    );
-
-    if (student) {
-      localStorage.setItem("loggedInStudent", JSON.stringify(student));
-      alert("Login successful! Welcome " + student.fullName);
-      window.location.href = "dashboard.html";
-    } else {
-      alert("Login failed! Please check your details or register first.");
+    // Populate dropdowns with available options
+    function populateDropdowns() {
+      const classes = JSON.parse(localStorage.getItem('classes')) || [];
+      const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
+      
+      // Login form dropdowns
+      const classSelect = document.getElementById('class');
+      const dormSelect = document.getElementById('dorm');
+      
+      // Registration form dropdowns
+      const regClassSelect = document.getElementById('regClass');
+      const regDormSelect = document.getElementById('regDorm');
+      
+      // Clear existing options except the first one
+      classSelect.innerHTML = '<option value="">Select your class</option>';
+      dormSelect.innerHTML = '<option value="">Select your dorm</option>';
+      regClassSelect.innerHTML = '<option value="">Select your class</option>';
+      regDormSelect.innerHTML = '<option value="">Select your dorm</option>';
+      
+      // Add class options
+      classes.forEach(className => {
+        const option = document.createElement('option');
+        option.value = className;
+        option.textContent = className;
+        classSelect.appendChild(option);
+        
+        const regOption = option.cloneNode(true);
+        regClassSelect.appendChild(regOption);
+      });
+      
+      // Add dorm options
+      dorms.forEach(dormName => {
+        const option = document.createElement('option');
+        option.value = dormName;
+        option.textContent = dormName;
+        dormSelect.appendChild(option);
+        
+        const regOption = option.cloneNode(true);
+        regDormSelect.appendChild(regOption);
+      });
     }
-  });
+
+    // Show notification message
+    function showNotification(message, type, page = 'login') {
+      const notification = document.getElementById(page === 'login' ? 'notification' : 'regNotification');
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+      
+      // Hide notification after 5 seconds
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+
+    // Show a specific page
+    function showPage(pageId) {
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('registerPage').style.display = 'none';
+      document.getElementById('dashboardPage').style.display = 'none';
+      
+      document.getElementById(pageId).style.display = 'block';
+    }
+
+    // Handle login form submission
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const adm = document.getElementById('adm').value.trim();
+      const studentClass = document.getElementById('class').value;
+      const dorm = document.getElementById('dorm').value;
+      
+      // Basic validation
+      if (!adm || !studentClass || !dorm) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+      }
+      
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      
+      // Find user with matching credentials
+      const user = students.find(s => 
+        s.adm === adm && s.class === studentClass && s.dorm === dorm
+      );
+      
+      if (user) {
+        // Check if user has already voted
+        if (user.hasVoted) {
+          showNotification('You have already voted. Each student can only vote once.', 'error');
+        } else {
+          // Save logged in user and redirect
+          localStorage.setItem('loggedInUser', JSON.stringify(user));
+          showNotification('✅ Login successful! Redirecting to dashboard...', 'success');
+          
+          // Redirect after a short delay
+          setTimeout(() => {
+            showDashboard();
+          }, 1500);
+        }
+      } else {
+        showNotification('Invalid login credentials. Please check your admission number, class, and dorm.', 'error');
+      }
+    });
+
+    // Handle registration form submission
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const adm = document.getElementById('regAdm').value.trim();
+      const name = document.getElementById('regName').value.trim();
+      const studentClass = document.getElementById('regClass').value;
+      const dorm = document.getElementById('regDorm').value;
+      
+      // Basic validation
+      if (!adm || !name || !studentClass || !dorm) {
+        showNotification('Please fill in all fields', 'error', 'register');
+        return;
+      }
+      
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      
+      // Check if admission number already exists
+      if (students.some(s => s.adm === adm)) {
+        showNotification('This admission number is already registered', 'error', 'register');
+        return;
+      }
+      
+      // Add new student
+      const newStudent = {
+        adm,
+        name,
+        class: studentClass,
+        dorm,
+        hasVoted: false
+      };
+      
+      students.push(newStudent);
+      localStorage.setItem('students', JSON.stringify(students));
+      
+      showNotification('✅ Registration successful! You can now login.', 'success', 'register');
+      
+      // Clear form
+      document.getElementById('registerForm').reset();
+      
+      // Redirect to login after a delay
+      setTimeout(() => {
+        showPage('loginPage');
+      }, 2000);
+    });
+
+    // Show dashboard with user info and candidates
+    function showDashboard() {
+      const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      
+      if (!user.adm) {
+        showPage('loginPage');
+        return;
+      }
+      
+      // Update user info
+      document.getElementById('userName').textContent = user.name;
+      document.getElementById('userAdm').textContent = user.adm;
+      document.getElementById('userClass').textContent = user.class;
+      document.getElementById('userDorm').textContent = user.dorm;
+      document.getElementById('votingStatus').textContent = user.hasVoted ? 'Already Voted' : 'Not Voted Yet';
+      document.getElementById('votingStatus').style.color = user.hasVoted ? '#fc8181' : '#68d391';
+      
+      // Display candidates
+      const candidates = JSON.parse(localStorage.getItem('candidates')) || [];
+      const candidateList = document.getElementById('candidateList');
+      candidateList.innerHTML = '';
+      
+      if (user.hasVoted) {
+        candidateList.innerHTML = '<p>You have already voted. Thank you for participating!</p>';
+      } else {
+        candidates.forEach(candidate => {
+          const candidateEl = document.createElement('div');
+          candidateEl.className = 'candidate';
+          candidateEl.innerHTML = `
+            <div class="candidate-info">
+              <div class="candidate-name">${candidate.name}</div>
+              <div class="candidate-position">${candidate.position}</div>
+            </div>
+            <button class="vote-btn" data-id="${candidate.id}">Vote</button>
+          `;
+          candidateList.appendChild(candidateEl);
+        });
+        
+        // Add event listeners to vote buttons
+        document.querySelectorAll('.vote-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const candidateId = parseInt(this.getAttribute('data-id'));
+            voteForCandidate(candidateId);
+          });
+        });
+      }
+      
+      showPage('dashboardPage');
+    }
+
+    // Handle voting for a candidate
+    function voteForCandidate(candidateId) {
+      const candidates = JSON.parse(localStorage.getItem('candidates')) || [];
+      const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      
+      if (user.hasVoted) {
+        showNotification('You have already voted!', 'error');
+        return;
+      }
+      
+      // Update candidate votes
+      const updatedCandidates = candidates.map(candidate => {
+        if (candidate.id === candidateId) {
+          return { ...candidate, votes: candidate.votes + 1 };
+        }
+        return candidate;
+      });
+      
+      localStorage.setItem('candidates', JSON.stringify(updatedCandidates));
+      
+      // Update user voting status
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      const updatedStudents = students.map(student => {
+        if (student.adm === user.adm) {
+          return { ...student, hasVoted: true };
+        }
+        return student;
+      });
+      
+      localStorage.setItem('students', JSON.stringify(updatedStudents));
+      
+      // Update logged in user
+      user.hasVoted = true;
+      localStorage.setItem('loggedInUser', JSON.stringify(user));
+      
+      showNotification('✅ Thank you for voting! Your vote has been recorded.', 'success');
+      
+      // Refresh dashboard
+      setTimeout(() => {
+        showDashboard();
+      }, 1500);
+    }
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeData();
+      populateDropdowns();
+      
+      // Check if user is already logged in
+      const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      if (user.adm) {
+        showDashboard();
+      }
+      
+      // Add event listeners for navigation
+      document.getElementById('showRegister').addEventListener('click', function(e) {
+        e.preventDefault();
+        showPage('registerPage');
+      });
+      
+      document.getElementById('showLogin').addEventListener('click', function(e) {
+        e.preventDefault();
+        showPage('loginPage');
+      });
+      
+      document.getElementById('showDashboard').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Create a demo user for testing
+        const demoUser = {
+          adm: '1234',
+          name: 'John Doe',
+          class: 'Form 1 East',
+          dorm: 'Mandela',
+          hasVoted: false
+        };
+        localStorage.setItem('loggedInUser', JSON.stringify(demoUser));
+        showDashboard();
+      });
+      
+      document.getElementById('logoutBtn').addEventListener('click', function() {
+        localStorage.removeItem('loggedInUser');
+        showPage('loginPage');
+      });
+    });
   </script>
 </body>
 </html>
