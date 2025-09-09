@@ -6,54 +6,12 @@
   <title>Student Login - St. Joseph's Kitale</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="logo.png" type="image/png">
-  <style>
-    .loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #5a3ec8;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-left: 10px;
-      vertical-align: middle;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .alert {
-      padding: 12px 16px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .alert-error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .alert-info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
     <h2>Student Login</h2>
     
-    <div id="loginMessage" class="alert" style="display: none;"></div>
+    <div id="loginMessage" style="display: none; padding: 12px; margin: 10px 0; border-radius: 5px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"></div>
     
     <form id="loginForm">
       <div class="form-group">
@@ -70,10 +28,7 @@
         <label for="class">Class</label>
         <select id="class" name="class" required>
           <option value="">-- Select Class --</option>
-          <option value="Form 1">Form 1</option>
-          <option value="Form 2">Form 2</option>
-          <option value="Form 3">Form 3</option>
-          <option value="Form 4">Form 4</option>
+          <!-- Options will be populated automatically -->
         </select>
       </div>
 
@@ -81,140 +36,133 @@
         <label for="dorm">Dorm</label>
         <select id="dorm" name="dorm" required>
           <option value="">-- Select Dorm --</option>
-          <option value="Dorm A">Dorm A</option>
-          <option value="Dorm B">Dorm B</option>
-          <option value="Dorm C">Dorm C</option>
-          <option value="Dorm D">Dorm D</option>
+          <!-- Options will be populated automatically -->
         </select>
       </div>
 
-      <button type="submit" class="btn" id="loginBtn">Login</button>
+      <button type="submit" class="btn">Login</button>
     </form>
 
     <p>Don't have an account? <a href="register.html">Register here</a></p>
     <p><a href="index.html">← Back to Home</a></p>
-
-    <!-- Emergency login button for testing -->
-    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-      <h3>Quick Test Login</h3>
-      <button onclick="quickLogin()" style="background: #28a745; margin: 5px;">Login as Test Student</button>
-      <button onclick="quickAdmin()" style="background: #dc3545; margin: 5px;">Login as Admin</button>
-    </div>
   </div>
 
   <script>
     // Show message to user
-    function showMessage(message, type = 'info') {
+    function showMessage(message, isError = true) {
       const messageDiv = document.getElementById('loginMessage');
       messageDiv.textContent = message;
-      messageDiv.className = `alert alert-${type}`;
       messageDiv.style.display = 'block';
+      messageDiv.style.background = isError ? '#f8d7da' : '#d4edda';
+      messageDiv.style.color = isError ? '#721c24' : '#155724';
+      messageDiv.style.borderColor = isError ? '#f5c6cb' : '#c3e6cb';
       
       setTimeout(() => {
         messageDiv.style.display = 'none';
       }, 5000);
     }
 
-    // Handle login using localStorage (no backend needed)
-    function handleLogin(e) {
-      e.preventDefault();
+    // Populate dropdowns from localStorage
+    function populateDropdowns() {
+      try {
+        // Get classes and dorms from localStorage
+        const classes = JSON.parse(localStorage.getItem('classes')) || [];
+        const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
+        
+        const classSelect = document.getElementById('class');
+        const dormSelect = document.getElementById('dorm');
+        
+        // Clear existing options except the first one
+        classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+        dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
+        
+        // Add classes to dropdown
+        classes.forEach(className => {
+          const option = document.createElement('option');
+          option.value = className;
+          option.textContent = className;
+          classSelect.appendChild(option);
+        });
+        
+        // Add dorms to dropdown
+        dorms.forEach(dormName => {
+          const option = document.createElement('option');
+          option.value = dormName;
+          option.textContent = dormName;
+          dormSelect.appendChild(option);
+        });
+        
+      } catch (error) {
+        console.log('Could not load classes/dorms from localStorage, using defaults');
+        
+        // Add default options if localStorage is empty
+        const defaultClasses = ['Form 1', 'Form 2', 'Form 3', 'Form 4'];
+        const defaultDorms = ['Dorm A', 'Dorm B', 'Dorm C', 'Dorm D'];
+        
+        const classSelect = document.getElementById('class');
+        const dormSelect = document.getElementById('dorm');
+        
+        defaultClasses.forEach(className => {
+          const option = document.createElement('option');
+          option.value = className;
+          option.textContent = className;
+          classSelect.appendChild(option);
+        });
+        
+        defaultDorms.forEach(dormName => {
+          const option = document.createElement('option');
+          option.value = dormName;
+          option.textContent = dormName;
+          dormSelect.appendChild(option);
+        });
+      }
+    }
+
+    // Handle login form submission
+    function handleLogin(event) {
+      event.preventDefault();
       
       const admission = document.getElementById('admission').value.trim();
       const fullname = document.getElementById('fullname').value.trim();
       const studentClass = document.getElementById('class').value;
       const dorm = document.getElementById('dorm').value;
       
-      // Basic validation
+      // Validate all fields are filled
       if (!admission || !fullname || !studentClass || !dorm) {
-        showMessage('Please fill in all fields', 'error');
+        showMessage('Please fill in all fields');
         return;
       }
       
-      if (studentClass === "" || dorm === "") {
-        showMessage('Please select both class and dorm', 'error');
-        return;
-      }
+      // Get all registered students
+      const students = JSON.parse(localStorage.getItem('students')) || [];
       
-      try {
-        // Show loading state
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = 'Logging in...';
+      // Find the student with matching credentials
+      const student = students.find(s => 
+        s.adm === admission && 
+        s.name.toLowerCase() === fullname.toLowerCase() &&
+        s.class === studentClass &&
+        s.dorm === dorm
+      );
+      
+      if (student) {
+        // Save student session
+        localStorage.setItem('loggedInStudent', JSON.stringify(student));
+        showMessage('Login successful! Redirecting...', false);
         
-        // Get students from localStorage
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        
-        // Check if student exists
-        const student = students.find(s => 
-          s.adm === admission && 
-          s.name.toLowerCase() === fullname.toLowerCase() &&
-          s.class === studentClass &&
-          s.dorm === dorm
-        );
-        
-        if (student) {
-          // Save to localStorage for session management
-          localStorage.setItem('loggedInStudent', JSON.stringify(student));
-          showMessage('Login successful! Redirecting...', 'success');
-          
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1000);
-        } else {
-          showMessage('Invalid login details. Please check your information or register first.', 'error');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        showMessage('Login error. Please try again.', 'error');
-      } finally {
-        // Reset button state
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = 'Login';
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        showMessage('Invalid login details. Please check your information or register first.');
       }
     }
 
-    // Quick test login function
-    function quickLogin() {
-      // Create a test student if none exists
-      let students = JSON.parse(localStorage.getItem('students')) || [];
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Populate the dropdowns
+      populateDropdowns();
       
-      const testStudent = {
-        adm: 'TEST123',
-        name: 'Test Student',
-        class: 'Form 4',
-        dorm: 'Dorm A',
-        photo: ''
-      };
-      
-      // Add test student if not already exists
-      if (!students.find(s => s.adm === 'TEST123')) {
-        students.push(testStudent);
-        localStorage.setItem('students', JSON.stringify(students));
-      }
-      
-      // Auto-fill the form
-      document.getElementById('admission').value = 'TEST123';
-      document.getElementById('fullname').value = 'Test Student';
-      document.getElementById('class').value = 'Form 4';
-      document.getElementById('dorm').value = 'Dorm A';
-      
-      showMessage('Test credentials filled. Click Login to continue.', 'info');
-    }
-
-    // Quick admin login
-    function quickAdmin() {
-      // Set admin password if not set
-      if (!localStorage.getItem('adminPassword')) {
-        localStorage.setItem('adminPassword', 'admin123');
-      }
-      
-      // Redirect to admin page
-      window.location.href = 'admin.html';
-    }
-
-    // Initialize page
-    document.addEventListener('DOMContentLoaded', () => {
       // Set up form submission handler
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       
@@ -224,34 +172,10 @@
         window.location.href = 'dashboard.html';
       }
       
-      // Try to load classes/dorms from localStorage for dropdowns
-      try {
-        const classes = JSON.parse(localStorage.getItem('classes')) || [];
-        const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
-        
-        if (classes.length > 0) {
-          const classSelect = document.getElementById('class');
-          classSelect.innerHTML = '<option value="">-- Select Class --</option>';
-          classes.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls;
-            option.textContent = cls;
-            classSelect.appendChild(option);
-          });
-        }
-        
-        if (dorms.length > 0) {
-          const dormSelect = document.getElementById('dorm');
-          dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
-          dorms.forEach(dm => {
-            const option = document.createElement('option');
-            option.value = dm;
-            option.textContent = dm;
-            dormSelect.appendChild(option);
-          });
-        }
-      } catch (error) {
-        console.log('Using default class/dorm options');
+      // Check if there are any registered students
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      if (students.length === 0) {
+        showMessage('No registered students found. Please register first.');
       }
     });
   </script>
