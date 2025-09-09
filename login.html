@@ -7,45 +7,23 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="logo.png" type="image/png">
   <style>
-    .loading {
-      opacity: 0.7;
-      pointer-events: none;
-    }
-    .spinner {
-      border: 3px solid #f3f3f3;
-      border-top: 3px solid #5a3ec8;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
+    .refresh-btn {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
       margin-left: 10px;
-      vertical-align: middle;
+      font-size: 12px;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .refresh-btn:hover {
+      background: #5a6268;
     }
-    .alert {
-      padding: 12px 16px;
-      border-radius: 6px;
-      margin-bottom: 16px;
-      display: none;
-    }
-    .alert-success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .alert-error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .alert-info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
+    .last-updated {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -53,7 +31,7 @@
   <div class="container">
     <h2>Student Login</h2>
     
-    <div id="loginMessage" class="alert" style="display: none;"></div>
+    <div id="loginMessage" style="display: none; padding: 12px; margin: 10px 0; border-radius: 5px; background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;"></div>
     
     <form id="loginForm">
       <div class="form-group">
@@ -67,154 +45,173 @@
       </div>
 
       <div class="form-group">
-        <label for="class">Class</label>
+        <label for="class">
+          Class 
+          <button type="button" class="refresh-btn" onclick="loadClasses()" title="Refresh classes">↻</button>
+        </label>
         <select id="class" name="class" required>
-          <option value="">-- Select Class --</option>
-          <option value="Form 1">Form 1</option>
-          <option value="Form 2">Form 2</option>
-          <option value="Form 3">Form 3</option>
-          <option value="Form 4">Form 4</option>
+          <option value="">-- Loading Classes... --</option>
         </select>
+        <div class="last-updated" id="classUpdateTime"></div>
       </div>
 
       <div class="form-group">
-        <label for="dorm">Dorm</label>
+        <label for="dorm">
+          Dorm 
+          <button type="button" class="refresh-btn" onclick="loadDorms()" title="Refresh dorms">↻</button>
+        </label>
         <select id="dorm" name="dorm" required>
-          <option value="">-- Select Dorm --</option>
-          <option value="Dorm A">Dorm A</option>
-          <option value="Dorm B">Dorm B</option>
-          <option value="Dorm C">Dorm C</option>
-          <option value="Dorm D">Dorm D</option>
+          <option value="">-- Loading Dorms... --</option>
         </select>
+        <div class="last-updated" id="dormUpdateTime"></div>
       </div>
 
-      <button type="submit" class="btn" id="loginBtn">Login</button>
+      <button type="submit" class="btn">Login</button>
     </form>
 
     <p>Don't have an account? <a href="register.html">Register here</a></p>
     <p><a href="index.html">← Back to Home</a></p>
-
-    <!-- Emergency login button for testing -->
-    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-      <h3>Quick Test Login</h3>
-      <button onclick="quickLogin()" style="background: #28a745; margin: 5px;">Login as Test Student</button>
-      <button onclick="quickAdmin()" style="background: #dc3545; margin: 5px;">Login as Admin</button>
-    </div>
   </div>
 
   <script>
     // Show message to user
-    function showMessage(message, type = 'info') {
+    function showMessage(message, isError = true) {
       const messageDiv = document.getElementById('loginMessage');
       messageDiv.textContent = message;
-      messageDiv.className = `alert alert-${type}`;
       messageDiv.style.display = 'block';
+      messageDiv.style.background = isError ? '#f8d7da' : '#d4edda';
+      messageDiv.style.color = isError ? '#721c24' : '#155724';
+      messageDiv.style.borderColor = isError ? '#f5c6cb' : '#c3e6cb';
       
       setTimeout(() => {
         messageDiv.style.display = 'none';
       }, 5000);
     }
 
-    // Handle login using localStorage (no backend needed)
-    function handleLogin(e) {
-      e.preventDefault();
+    // Load classes from admin data
+    function loadClasses() {
+      try {
+        // First try to get from admin storage
+        const adminClasses = JSON.parse(localStorage.getItem('classes_default') || localStorage.getItem('classes'));
+        
+        // If not found in admin storage, try regular storage
+        const regularClasses = JSON.parse(localStorage.getItem('classes') || '[]');
+        
+        const classes = adminClasses || regularClasses;
+        const classSelect = document.getElementById('class');
+        
+        classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+        
+        if (classes && classes.length > 0) {
+          classes.forEach(className => {
+            const option = document.createElement('option');
+            option.value = className;
+            option.textContent = className;
+            classSelect.appendChild(option);
+          });
+          document.getElementById('classUpdateTime').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+        } else {
+          classSelect.innerHTML = '<option value="">-- No classes available --</option>';
+        }
+      } catch (error) {
+        console.error('Error loading classes:', error);
+        document.getElementById('class').innerHTML = '<option value="">-- Error loading classes --</option>';
+      }
+    }
+
+    // Load dorms from admin data
+    function loadDorms() {
+      try {
+        // First try to get from admin storage
+        const adminDorms = JSON.parse(localStorage.getItem('dorms_default') || localStorage.getItem('dorms'));
+        
+        // If not found in admin storage, try regular storage
+        const regularDorms = JSON.parse(localStorage.getItem('dorms') || '[]');
+        
+        const dorms = adminDorms || regularDorms;
+        const dormSelect = document.getElementById('dorm');
+        
+        dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
+        
+        if (dorms && dorms.length > 0) {
+          dorms.forEach(dormName => {
+            const option = document.createElement('option');
+            option.value = dormName;
+            option.textContent = dormName;
+            dormSelect.appendChild(option);
+          });
+          document.getElementById('dormUpdateTime').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
+        } else {
+          dormSelect.innerHTML = '<option value="">-- No dorms available --</option>';
+        }
+      } catch (error) {
+        console.error('Error loading dorms:', error);
+        document.getElementById('dorm').innerHTML = '<option value="">-- Error loading dorms --</option>';
+      }
+    }
+
+    // Handle login form submission
+    function handleLogin(event) {
+      event.preventDefault();
       
       const admission = document.getElementById('admission').value.trim();
       const fullname = document.getElementById('fullname').value.trim();
       const studentClass = document.getElementById('class').value;
       const dorm = document.getElementById('dorm').value;
       
-      // Basic validation
+      // Validate all fields are filled
       if (!admission || !fullname || !studentClass || !dorm) {
-        showMessage('Please fill in all fields', 'error');
+        showMessage('Please fill in all fields');
         return;
       }
       
       if (studentClass === "" || dorm === "") {
-        showMessage('Please select both class and dorm', 'error');
+        showMessage('Please select both class and dorm');
         return;
       }
       
-      try {
-        // Show loading state
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.disabled = true;
-        loginBtn.innerHTML = 'Logging in...';
+      // Get all registered students
+      const students = JSON.parse(localStorage.getItem('students')) || [];
+      
+      // Find the student with matching credentials
+      const student = students.find(s => 
+        s.adm === admission && 
+        s.name.toLowerCase() === fullname.toLowerCase() &&
+        s.class === studentClass &&
+        s.dorm === dorm
+      );
+      
+      if (student) {
+        // Save student session
+        localStorage.setItem('loggedInStudent', JSON.stringify(student));
+        showMessage('Login successful! Redirecting...', false);
         
-        // Get students from localStorage
-        const students = JSON.parse(localStorage.getItem('students')) || [];
-        
-        // Check if student exists
-        const student = students.find(s => 
-          s.adm === admission && 
-          s.name.toLowerCase() === fullname.toLowerCase() &&
-          s.class === studentClass &&
-          s.dorm === dorm
-        );
-        
-        if (student) {
-          // Save to localStorage for session management
-          localStorage.setItem('loggedInStudent', JSON.stringify(student));
-          showMessage('Login successful! Redirecting...', 'success');
-          
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1000);
-        } else {
-          showMessage('Invalid login details. Please check your information or register first.', 'error');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        showMessage('Login error. Please try again.', 'error');
-      } finally {
-        // Reset button state
-        const loginBtn = document.getElementById('loginBtn');
-        loginBtn.disabled = false;
-        loginBtn.innerHTML = 'Login';
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } else {
+        showMessage('Invalid login details. Please check your information or register first.');
       }
     }
 
-    // Quick test login function
-    function quickLogin() {
-      // Create a test student if none exists
-      let students = JSON.parse(localStorage.getItem('students')) || [];
-      
-      const testStudent = {
-        adm: 'TEST123',
-        name: 'Test Student',
-        class: 'Form 4',
-        dorm: 'Dorm A',
-        photo: ''
-      };
-      
-      // Add test student if not already exists
-      if (!students.find(s => s.adm === 'TEST123')) {
-        students.push(testStudent);
-        localStorage.setItem('students', JSON.stringify(students));
-      }
-      
-      // Auto-fill the form
-      document.getElementById('admission').value = 'TEST123';
-      document.getElementById('fullname').value = 'Test Student';
-      document.getElementById('class').value = 'Form 4';
-      document.getElementById('dorm').value = 'Dorm A';
-      
-      showMessage('Test credentials filled. Click Login to continue.', 'info');
+    // Check localStorage for admin data every few seconds
+    function startDataSync() {
+      setInterval(() => {
+        loadClasses();
+        loadDorms();
+      }, 3000); // Check every 3 seconds
     }
 
-    // Quick admin login
-    function quickAdmin() {
-      // Set admin password if not set
-      if (!localStorage.getItem('adminPassword')) {
-        localStorage.setItem('adminPassword', 'admin123');
-      }
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load classes and dorms immediately
+      loadClasses();
+      loadDorms();
       
-      // Redirect to admin page
-      window.location.href = 'admin.html';
-    }
-
-    // Initialize page
-    document.addEventListener('DOMContentLoaded', () => {
+      // Start syncing data
+      startDataSync();
+      
       // Set up form submission handler
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       
@@ -223,37 +220,15 @@
       if (loggedInStudent) {
         window.location.href = 'dashboard.html';
       }
-      
-      // Try to load classes/dorms from localStorage for dropdowns
-      try {
-        const classes = JSON.parse(localStorage.getItem('classes')) || [];
-        const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
-        
-        if (classes.length > 0) {
-          const classSelect = document.getElementById('class');
-          classSelect.innerHTML = '<option value="">-- Select Class --</option>';
-          classes.forEach(cls => {
-            const option = document.createElement('option');
-            option.value = cls;
-            option.textContent = cls;
-            classSelect.appendChild(option);
-          });
-        }
-        
-        if (dorms.length > 0) {
-          const dormSelect = document.getElementById('dorm');
-          dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
-          dorms.forEach(dm => {
-            const option = document.createElement('option');
-            option.value = dm;
-            option.textContent = dm;
-            dormSelect.appendChild(option);
-          });
-        }
-      } catch (error) {
-        console.log('Using default class/dorm options');
-      }
     });
+
+    // Emergency function to sync admin data manually
+    window.syncAdminData = function() {
+      // This function can be called from browser console if needed
+      console.log('Manual sync triggered');
+      loadClasses();
+      loadDorms();
+    };
   </script>
 </body>
 </html>
