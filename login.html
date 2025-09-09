@@ -2,65 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Login - School Voting System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" href="logo.png" type="image/png">
 </head>
 <body>
-  <header>
-    <h1>St. Joseph’s Boys High School Kitale</h1>
-    <h2>Student Login</h2>
-  </header>
-
   <div class="container">
+    <h2>Student Login</h2>
     <form id="loginForm">
-      <label for="adm">Admission Number</label>
-      <input type="text" id="adm" required>
+      <div class="form-group">
+        <label for="admission">Admission Number</label>
+        <input type="text" id="admission" name="admission" placeholder="Enter Admission Number" required>
+      </div>
 
-      <label for="class">Class</label>
-      <select id="class" required></select>
+      <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" placeholder="Enter Full Name" required>
+      </div>
 
-      <label for="dorm">Dorm</label>
-      <select id="dorm" required></select>
+      <div class="form-group">
+        <label for="class">Class</label>
+        <select id="class" name="class" required>
+          <option value="">-- Select Class --</option>
+        </select>
+      </div>
 
-      <button type="submit">Login</button>
+      <div class="form-group">
+        <label for="dorm">Dorm</label>
+        <select id="dorm" name="dorm" required>
+          <option value="">-- Select Dorm --</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn">Login</button>
     </form>
-    <p style="text-align:center; margin-top: 20px;">
-      Not registered? <a href="register.html">Register Here</a> |
-      <a href="index.html">🏠 Back to Home</a>
-    </p>
+
+    <p>Don't have an account? <a href="register.html">Register here</a></p>
+    <p><a href="index.html">🏠 Back to Home</a></p>
   </div>
 
+  <script src="script.js"></script>
   <script>
-    function populateDropdown(id, listName) {
-      const list = JSON.parse(localStorage.getItem(listName)) || [];
-      const select = document.getElementById(id);
-      select.innerHTML = list.length 
-        ? list.map(item => `<option>${item}</option>`).join('') 
-        : '<option disabled selected>No options available</option>';
+  // Populate Class and Dorm dynamically from localStorage
+  document.addEventListener("DOMContentLoaded", () => {
+    const classes = JSON.parse(localStorage.getItem("classes")) || [];
+    const dorms = JSON.parse(localStorage.getItem("dorms")) || [];
+
+    const classSelect = document.getElementById("class");
+    const dormSelect = document.getElementById("dorm");
+
+    if (classSelect) {
+      classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+      classes.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls;
+        opt.textContent = cls;
+        classSelect.appendChild(opt);
+      });
     }
 
-    populateDropdown('class', 'classes');
-    populateDropdown('dorm', 'dorms');
+    if (dormSelect) {
+      dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
+      dorms.forEach(dm => {
+        const opt = document.createElement("option");
+        opt.value = dm;
+        opt.textContent = dm;
+        dormSelect.appendChild(opt);
+      });
+    }
+  });
 
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const adm = document.getElementById('adm').value.trim();
-      const studentClass = document.getElementById('class').value;
-      const dorm = document.getElementById('dorm').value;
+  // Handle Login - FIXED VERSION
+  document.getElementById("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
 
-      const students = JSON.parse(localStorage.getItem('students')) || [];
-      const user = students.find(s => s.adm === adm && s.class === studentClass && s.dorm === dorm);
+    const admission = document.getElementById("admission").value.trim();
+    const fullname = document.getElementById("fullname").value.trim();
+    const cls = document.getElementById("class").value;
+    const dorm = document.getElementById("dorm").value;
 
-      if (user) {
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        alert('✅ Login successful');
-        window.location.href = 'dashboard.html';
-      } else {
-        alert('❌ Invalid login. Please check your details.');
-      }
+    // Validate all fields are filled
+    if (!admission || !fullname || !cls || !dorm) {
+      alert("Please fill in all fields!");
+      return;
+    }
+
+    const students = JSON.parse(localStorage.getItem("students")) || [];
+
+    // Case-insensitive search with better debugging
+    const student = students.find(s => {
+      const admMatch = s.adm && s.adm.toString().toLowerCase() === admission.toLowerCase();
+      const nameMatch = s.name && s.name.toLowerCase().includes(fullname.toLowerCase());
+      const classMatch = s.class === cls;
+      const dormMatch = s.dorm === dorm;
+      
+      return admMatch && nameMatch && classMatch && dormMatch;
     });
-  </script>
+
+    if (student) {
+      localStorage.setItem("loggedInStudent", JSON.stringify(student));
+      alert("Login successful! Welcome " + student.name);
+      window.location.href = "dashboard.html";
+    } else {
+      // Show more helpful error message
+      console.log("Login failed. Looking for:", {admission, fullname, cls, dorm});
+      console.log("Available students:", students);
+      
+      alert("Login failed! Please check:\n1. Admission number\n2. Full name spelling\n3. Correct class and dorm\n\nIf you haven't registered, please register first.");
+    }
+  });
+</script>
 </body>
 </html>
- fix this code so that i cna login
