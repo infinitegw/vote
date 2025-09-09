@@ -26,6 +26,27 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .alert-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .alert-info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
   </style>
 </head>
 <body>
@@ -49,18 +70,22 @@
         <label for="class">Class</label>
         <select id="class" name="class" required>
           <option value="">-- Select Class --</option>
-          <!-- Options will be populated by JavaScript -->
+          <option value="Form 1">Form 1</option>
+          <option value="Form 2">Form 2</option>
+          <option value="Form 3">Form 3</option>
+          <option value="Form 4">Form 4</option>
         </select>
-        <span id="classLoading" class="spinner" style="display: none;"></span>
       </div>
 
       <div class="form-group">
         <label for="dorm">Dorm</label>
         <select id="dorm" name="dorm" required>
           <option value="">-- Select Dorm --</option>
-          <!-- Options will be populated by JavaScript -->
+          <option value="Dorm A">Dorm A</option>
+          <option value="Dorm B">Dorm B</option>
+          <option value="Dorm C">Dorm C</option>
+          <option value="Dorm D">Dorm D</option>
         </select>
-        <span id="dormLoading" class="spinner" style="display: none;"></span>
       </div>
 
       <button type="submit" class="btn" id="loginBtn">Login</button>
@@ -68,12 +93,16 @@
 
     <p>Don't have an account? <a href="register.html">Register here</a></p>
     <p><a href="index.html">← Back to Home</a></p>
+
+    <!-- Emergency login button for testing -->
+    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+      <h3>Quick Test Login</h3>
+      <button onclick="quickLogin()" style="background: #28a745; margin: 5px;">Login as Test Student</button>
+      <button onclick="quickAdmin()" style="background: #dc3545; margin: 5px;">Login as Admin</button>
+    </div>
   </div>
 
   <script>
-    // API base URL - points to your backend
-    const API_BASE = window.location.origin;
-    
     // Show message to user
     function showMessage(message, type = 'info') {
       const messageDiv = document.getElementById('loginMessage');
@@ -81,78 +110,13 @@
       messageDiv.className = `alert alert-${type}`;
       messageDiv.style.display = 'block';
       
-      // Auto-hide after 5 seconds
       setTimeout(() => {
         messageDiv.style.display = 'none';
       }, 5000);
     }
-    
-    // Populate dropdown with options
-    function populateDropdown(selectId, options, defaultText) {
-      const select = document.getElementById(selectId);
-      select.innerHTML = `<option value="">${defaultText}</option>`;
-      
-      if (options && options.length > 0) {
-        options.forEach(option => {
-          const opt = document.createElement('option');
-          opt.value = option;
-          opt.textContent = option;
-          select.appendChild(opt);
-        });
-      } else {
-        const opt = document.createElement('option');
-        opt.value = "";
-        opt.textContent = "No options available";
-        select.appendChild(opt);
-      }
-    }
-    
-    // Load options from backend
-    async function loadOptions() {
-      try {
-        // Show loading indicators
-        document.getElementById('classLoading').style.display = 'inline-block';
-        document.getElementById('dormLoading').style.display = 'inline-block';
-        document.getElementById('loginForm').classList.add('loading');
-        
-        const response = await fetch(`${API_BASE}/api/options`);
-        
-        if (!response.ok) {
-          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json();
-        
-        // Populate dropdowns
-        populateDropdown('class', data.classes, '-- Select Class --');
-        populateDropdown('dorm', data.dorms, '-- Select Dorm --');
-        
-      } catch (error) {
-        console.error('Error loading options:', error);
-        
-        // Fallback to localStorage if API fails
-        try {
-          const classes = JSON.parse(localStorage.getItem('classes')) || [];
-          const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
-          
-          populateDropdown('class', classes, '-- Select Class --');
-          populateDropdown('dorm', dorms, '-- Select Dorm --');
-          
-          showMessage('Using locally stored options. Some features may be limited.', 'info');
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError);
-          showMessage('Failed to load options. Please contact administrator.', 'error');
-        }
-      } finally {
-        // Hide loading indicators
-        document.getElementById('classLoading').style.display = 'none';
-        document.getElementById('dormLoading').style.display = 'none';
-        document.getElementById('loginForm').classList.remove('loading');
-      }
-    }
-    
-    // Handle login form submission
-    async function handleLogin(e) {
+
+    // Handle login using localStorage (no backend needed)
+    function handleLogin(e) {
       e.preventDefault();
       
       const admission = document.getElementById('admission').value.trim();
@@ -172,41 +136,36 @@
       }
       
       try {
-        // Show loading state on button
+        // Show loading state
         const loginBtn = document.getElementById('loginBtn');
         loginBtn.disabled = true;
-        loginBtn.innerHTML = 'Logging in... <span class="spinner"></span>';
+        loginBtn.innerHTML = 'Logging in...';
         
-        const response = await fetch(`${API_BASE}/api/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            admission,
-            fullname,
-            class: studentClass,
-            dorm
-          })
-        });
+        // Get students from localStorage
+        const students = JSON.parse(localStorage.getItem('students')) || [];
         
-        const result = await response.json();
+        // Check if student exists
+        const student = students.find(s => 
+          s.adm === admission && 
+          s.name.toLowerCase() === fullname.toLowerCase() &&
+          s.class === studentClass &&
+          s.dorm === dorm
+        );
         
-        if (result.success) {
-          // Save student data to localStorage for frontend use
-          localStorage.setItem('loggedInStudent', JSON.stringify(result.student));
+        if (student) {
+          // Save to localStorage for session management
+          localStorage.setItem('loggedInStudent', JSON.stringify(student));
           showMessage('Login successful! Redirecting...', 'success');
           
-          // Redirect to dashboard after a short delay
           setTimeout(() => {
             window.location.href = 'dashboard.html';
           }, 1000);
         } else {
-          showMessage(result.message || 'Login failed. Please check your details.', 'error');
+          showMessage('Invalid login details. Please check your information or register first.', 'error');
         }
       } catch (error) {
         console.error('Login error:', error);
-        showMessage('Network error. Please try again.', 'error');
+        showMessage('Login error. Please try again.', 'error');
       } finally {
         // Reset button state
         const loginBtn = document.getElementById('loginBtn');
@@ -214,12 +173,48 @@
         loginBtn.innerHTML = 'Login';
       }
     }
-    
+
+    // Quick test login function
+    function quickLogin() {
+      // Create a test student if none exists
+      let students = JSON.parse(localStorage.getItem('students')) || [];
+      
+      const testStudent = {
+        adm: 'TEST123',
+        name: 'Test Student',
+        class: 'Form 4',
+        dorm: 'Dorm A',
+        photo: ''
+      };
+      
+      // Add test student if not already exists
+      if (!students.find(s => s.adm === 'TEST123')) {
+        students.push(testStudent);
+        localStorage.setItem('students', JSON.stringify(students));
+      }
+      
+      // Auto-fill the form
+      document.getElementById('admission').value = 'TEST123';
+      document.getElementById('fullname').value = 'Test Student';
+      document.getElementById('class').value = 'Form 4';
+      document.getElementById('dorm').value = 'Dorm A';
+      
+      showMessage('Test credentials filled. Click Login to continue.', 'info');
+    }
+
+    // Quick admin login
+    function quickAdmin() {
+      // Set admin password if not set
+      if (!localStorage.getItem('adminPassword')) {
+        localStorage.setItem('adminPassword', 'admin123');
+      }
+      
+      // Redirect to admin page
+      window.location.href = 'admin.html';
+    }
+
     // Initialize page
     document.addEventListener('DOMContentLoaded', () => {
-      // Load options from server
-      loadOptions();
-      
       // Set up form submission handler
       document.getElementById('loginForm').addEventListener('submit', handleLogin);
       
@@ -227,6 +222,36 @@
       const loggedInStudent = localStorage.getItem('loggedInStudent');
       if (loggedInStudent) {
         window.location.href = 'dashboard.html';
+      }
+      
+      // Try to load classes/dorms from localStorage for dropdowns
+      try {
+        const classes = JSON.parse(localStorage.getItem('classes')) || [];
+        const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
+        
+        if (classes.length > 0) {
+          const classSelect = document.getElementById('class');
+          classSelect.innerHTML = '<option value="">-- Select Class --</option>';
+          classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls;
+            option.textContent = cls;
+            classSelect.appendChild(option);
+          });
+        }
+        
+        if (dorms.length > 0) {
+          const dormSelect = document.getElementById('dorm');
+          dormSelect.innerHTML = '<option value="">-- Select Dorm --</option>';
+          dorms.forEach(dm => {
+            const option = document.createElement('option');
+            option.value = dm;
+            option.textContent = dm;
+            dormSelect.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.log('Using default class/dorm options');
       }
     });
   </script>
