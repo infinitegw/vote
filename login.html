@@ -1,120 +1,234 @@
-<script>
-    // Function to populate a select element with options
-    function populateSelect(elementId, options, defaultText) {
-        const select = document.getElementById(elementId);
-        if (!select) return;
-        
-        select.innerHTML = `<option value="">${defaultText}</option>`;
-        options.forEach(option => {
-            const optElement = document.createElement('option');
-            optElement.value = option;
-            optElement.textContent = option;
-            select.appendChild(optElement);
-        });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login - St. Joseph's Kitale</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="logo.png" type="image/png">
+  <style>
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
     }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #5a3ec8;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Student Login</h2>
     
-    // Populate Class and Dorm dropdowns
-    async function populateDropdowns() {
-        try {
-            const response = await fetch('/api/options');
-            if (!response.ok) {
-                throw new Error('Server not responding');
-            }
-            const data = await response.json();
-            
-            if (data.classes && data.dorms) {
-                populateSelect('class', data.classes, '-- Select Class --');
-                populateSelect('dorm', data.dorms, '-- Select Dorm --');
-                console.log('Dropdowns populated from server');
-            } else {
-                throw new Error('Invalid data from server');
-            }
-        } catch (error) {
-            console.error('Error loading from server:', error);
-            // Fallback to localStorage
-            try {
-                const classes = JSON.parse(localStorage.getItem('classes')) || [];
-                const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
-                populateSelect('class', classes, '-- Select Class --');
-                populateSelect('dorm', dorms, '-- Select Dorm --');
-                showMessage('Using offline data. Some features may be limited.', 'info');
-            } catch (localError) {
-                console.error('Error loading from localStorage:', localError);
-                showMessage('Failed to load options. Please contact administrator.', 'error');
-            }
-        }
-    }
+    <div id="loginMessage" class="alert" style="display: none;"></div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="admission">Admission Number</label>
+        <input type="text" id="admission" name="admission" placeholder="Enter Admission Number" required>
+      </div>
+
+      <div class="form-group">
+        <label for="fullname">Full Name</label>
+        <input type="text" id="fullname" name="fullname" placeholder="Enter Full Name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="class">Class</label>
+        <select id="class" name="class" required>
+          <option value="">-- Select Class --</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+        <span id="classLoading" class="spinner" style="display: none;"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="dorm">Dorm</label>
+        <select id="dorm" name="dorm" required>
+          <option value="">-- Select Dorm --</option>
+          <!-- Options will be populated by JavaScript -->
+        </select>
+        <span id="dormLoading" class="spinner" style="display: none;"></span>
+      </div>
+
+      <button type="submit" class="btn" id="loginBtn">Login</button>
+    </form>
+
+    <p>Don't have an account? <a href="register.html">Register here</a></p>
+    <p><a href="index.html">← Back to Home</a></p>
+  </div>
+
+  <script>
+    // API base URL - points to your backend
+    const API_BASE = window.location.origin;
     
     // Show message to user
     function showMessage(message, type = 'info') {
-        const messageDiv = document.getElementById('loginMessage');
-        messageDiv.textContent = message;
-        messageDiv.className = `alert alert-${type}`;
-        messageDiv.style.display = 'block';
+      const messageDiv = document.getElementById('loginMessage');
+      messageDiv.textContent = message;
+      messageDiv.className = `alert alert-${type}`;
+      messageDiv.style.display = 'block';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        messageDiv.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Populate dropdown with options
+    function populateDropdown(selectId, options, defaultText) {
+      const select = document.getElementById(selectId);
+      select.innerHTML = `<option value="">${defaultText}</option>`;
+      
+      if (options && options.length > 0) {
+        options.forEach(option => {
+          const opt = document.createElement('option');
+          opt.value = option;
+          opt.textContent = option;
+          select.appendChild(opt);
+        });
+      } else {
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "No options available";
+        select.appendChild(opt);
+      }
+    }
+    
+    // Load options from backend
+    async function loadOptions() {
+      try {
+        // Show loading indicators
+        document.getElementById('classLoading').style.display = 'inline-block';
+        document.getElementById('dormLoading').style.display = 'inline-block';
+        document.getElementById('loginForm').classList.add('loading');
         
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-            messageDiv.style.display = 'none';
-        }, 5000);
+        const response = await fetch(`${API_BASE}/api/options`);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Populate dropdowns
+        populateDropdown('class', data.classes, '-- Select Class --');
+        populateDropdown('dorm', data.dorms, '-- Select Dorm --');
+        
+      } catch (error) {
+        console.error('Error loading options:', error);
+        
+        // Fallback to localStorage if API fails
+        try {
+          const classes = JSON.parse(localStorage.getItem('classes')) || [];
+          const dorms = JSON.parse(localStorage.getItem('dorms')) || [];
+          
+          populateDropdown('class', classes, '-- Select Class --');
+          populateDropdown('dorm', dorms, '-- Select Dorm --');
+          
+          showMessage('Using locally stored options. Some features may be limited.', 'info');
+        } catch (fallbackError) {
+          console.error('Fallback also failed:', fallbackError);
+          showMessage('Failed to load options. Please contact administrator.', 'error');
+        }
+      } finally {
+        // Hide loading indicators
+        document.getElementById('classLoading').style.display = 'none';
+        document.getElementById('dormLoading').style.display = 'none';
+        document.getElementById('loginForm').classList.remove('loading');
+      }
     }
     
     // Handle login form submission
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const admission = document.getElementById('admission').value.trim();
+      const fullname = document.getElementById('fullname').value.trim();
+      const studentClass = document.getElementById('class').value;
+      const dorm = document.getElementById('dorm').value;
+      
+      // Basic validation
+      if (!admission || !fullname || !studentClass || !dorm) {
+        showMessage('Please fill in all fields', 'error');
+        return;
+      }
+      
+      if (studentClass === "" || dorm === "") {
+        showMessage('Please select both class and dorm', 'error');
+        return;
+      }
+      
+      try {
+        // Show loading state on button
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = 'Logging in... <span class="spinner"></span>';
         
-        const admission = document.getElementById('admission').value.trim();
-        const fullname = document.getElementById('fullname').value.trim();
-        const studentClass = document.getElementById('class').value;
-        const dorm = document.getElementById('dorm').value;
+        const response = await fetch(`${API_BASE}/api/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            admission,
+            fullname,
+            class: studentClass,
+            dorm
+          })
+        });
         
-        // Basic validation
-        if (!admission || !fullname || !studentClass || !dorm) {
-            showMessage('Please fill in all fields', 'error');
-            return;
+        const result = await response.json();
+        
+        if (result.success) {
+          // Save student data to localStorage for frontend use
+          localStorage.setItem('loggedInStudent', JSON.stringify(result.student));
+          showMessage('Login successful! Redirecting...', 'success');
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
+        } else {
+          showMessage(result.message || 'Login failed. Please check your details.', 'error');
         }
-        
-        try {
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    admission,
-                    fullname,
-                    class: studentClass,
-                    dorm
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // Save student data to localStorage for frontend use
-                localStorage.setItem('loggedInStudent', JSON.stringify(result.student));
-                showMessage('Login successful! Redirecting...', 'success');
-                
-                // Redirect to dashboard after a short delay
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
-            } else {
-                showMessage(result.message || 'Login failed', 'error');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            showMessage('Network error. Please try again.', 'error');
-        }
-    });
+      } catch (error) {
+        console.error('Login error:', error);
+        showMessage('Network error. Please try again.', 'error');
+      } finally {
+        // Reset button state
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = 'Login';
+      }
+    }
     
     // Initialize page
     document.addEventListener('DOMContentLoaded', () => {
-        populateDropdowns();
-        
-        // Check if user is already logged in
-        const loggedInStudent = localStorage.getItem('loggedInStudent');
-        if (loggedInStudent) {
-            window.location.href = 'dashboard.html';
-        }
+      // Load options from server
+      loadOptions();
+      
+      // Set up form submission handler
+      document.getElementById('loginForm').addEventListener('submit', handleLogin);
+      
+      // Check if user is already logged in
+      const loggedInStudent = localStorage.getItem('loggedInStudent');
+      if (loggedInStudent) {
+        window.location.href = 'dashboard.html';
+      }
     });
-</script>
+  </script>
+</body>
+</html>
