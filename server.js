@@ -1,99 +1,190 @@
-// server.js
 import express from "express";
 import cors from "cors";
 import fs from "fs";
+import multer from "multer";
+import path from "path";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 app.use(cors());
 app.use(express.json());
+app.use(express.static(".")); // Serve all frontend files from root
 
-// Database file (simple JSON store for now)
+// Database file
 const DB_FILE = "./db.json";
 
 // Initialize db.json if missing
-if (!fs.existsSync(DB_FILE)) {
-  fs.writeFileSync(
-    DB_FILE,
-    JSON.stringify({ students: [], classes: [], dorms: [], votes: [] }, null, 2)
-  );
+const initializeDB = () => {
+  if (!fs.existsSync(DB_FILE)) {
+    const initialData = {
+      adminPassword: "admin123",
+      academicYear: "",
+      deadline: "",
+      classes: ["Form 1", "Form 2", "Form 3", "Form 4"],
+      dorms: ["Dorm A", "Dorm B", "Dorm C", "Dorm D"],
+      posts: ["President", "Secretary", "Treasurer"],
+      candidates: [],
+      students: [],
+      votes: [],
+      nominations: [],
+      logs: []
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2));
+    console.log("Created new database file with initial data");
+  }
+};
+
+// Helpers
+function readDB() {
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE, "utf8"));
+  } catch (error) {
+    console.error("Error reading database:", error);
+    return {
+      adminPassword: "admin123",
+      academicYear: "",
+      deadline: "",
+      classes: [],
+      dorms: [],
+      posts: [],
+      candidates: [],
+      students: [],
+      votes: [],
+      nominations: [],
+      logs: []
+    };
+  }
 }
 
-// Helper to load/save database
-const loadDB = () => JSON.parse(fs.readFileSync(DB_FILE));
-const saveDB = (db) => fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
-
-// Register student
-app.post("/register", (req, res) => {
-  const db = loadDB();
-  const { admission, name, className, dorm } = req.body;
-
-  if (db.students.find((s) => s.admission === admission)) {
-    return res.status(400).json({ message: "Student already registered" });
+function writeDB(data) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+    return true;
+  } catch (error) {
+    console.error("Error writing to database:", error);
+    return false;
   }
+}
 
-  db.students.push({ admission, name, className, dorm });
-  saveDB(db);
-  res.json({ message: "Registered successfully" });
+// Initialize database on server start
+initializeDB();
+
+/* ---------------------- TEST ENDPOINT ---------------------- */
+app.get("/api/test", (req, res) => {
+  res.json({ 
+    message: "Backend is working!",
+    timestamp: new Date().toISOString(),
+    status: "OK"
+  });
 });
 
-// Login
-app.post("/login", (req, res) => {
-  const db = loadDB();
-  const { admission, name, className, dorm } = req.body;
+/* ---------------------- ADMIN ROUTES ---------------------- */
+app.post("/api/admin/login", (req, res) => {
+  const db = readDB();
+  if (req.body.password === db.adminPassword) {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false, message: "Invalid admin password" });
+  }
+});
 
-  const student = db.students.find(
-    (s) =>
-      s.admission === admission &&
-      s.name === name &&
-      s.className === className &&
-      s.dorm === dorm
+app.post("/api/admin/change-password", (req, res) => {
+  const db = readDB();
+  const { oldPass, newPass } = req.body;
+
+  if (oldPass !== db.adminPassword) {
+    return res.json({ success: false, message: "Current password is incorrect" });
+  }
+
+  db.adminPassword = newPass;
+  if (writeDB(db)) {
+    res.json({ success: true, message: "Password changed successfully" });
+  } else {
+    res.json({ success: false, message: "Failed to change password" });
+  }
+});
+
+/* ---------------------- STUDENT ROUTES ---------------------- */
+// Student registration
+app.post("/api/register", upload.single('photo'), (req, res) => {
+  const db = readDB();
+  const { adm, name, class: studentClass, dorm } = req.body;
+  
+  // Validate required fields
+  if (!adm || !name || !studentClass || !dorm) {
+    return res.json({ success: false, message: "All fields are required" });
+  }
+
+  // Check if student already exists
+  const exists = db.students.find((s) => s.adm === adm);
+  if (exists) {
+    return res.json({ success: false, message: "Student already registered" });
+  }
+
+  // Handle photo upload
+  let photoBase64 = "";
+  if (req.file) {
+    photoBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+  }
+
+  // Add student to database
+  db.students.push({
+    adm,
+    name,
+    class: studentClass,
+    dorm,
+    photo: photoBase64
+  });
+
+  if (writeDB(db)) {
+    res.json({ success: true, message: "Registration successful" });
+  } else {
+    res.json({ success: false, message: "Registration failed" });
+  }
+});
+
+// Student login
+app.post("/api/login", (req, res) => {
+  const db = readDB();
+  const { admission, fullname, class: studentClass, dorm } = req.body;
+
+  // Validate required fields
+  if (!admission || !fullname || !studentClass || !dorm) {
+    return res.json({ success: false, message: "All fields are required" });
+  }
+
+  // Find student
+  const student = db.students.find(s => 
+    s.adm === admission && 
+    s.name.toLowerCase() === fullname.toLowerCase() &&
+    s.class === studentClass &&
+    s.dorm === dorm
   );
 
-  if (!student) {
-    return res.status(401).json({ message: "Invalid login" });
+  if (student) {
+    res.json({ success: true, student });
+  } else {
+    res.json({ success: false, message: "Invalid login details" });
   }
-
-  res.json({ message: "Login successful", student });
 });
 
-// Add class
-app.post("/add-class", (req, res) => {
-  const db = loadDB();
-  const { className } = req.body;
-
-  if (!db.classes.includes(className)) {
-    db.classes.push(className);
-    saveDB(db);
-  }
-
-  res.json({ message: "Class added", classes: db.classes });
+// Get classes and dorms for dropdowns
+app.get("/api/options", (req, res) => {
+  const db = readDB();
+  res.json({
+    classes: db.classes,
+    dorms: db.dorms,
+    posts: db.posts
+  });
 });
 
-// Get classes/dorms/students
-app.get("/classes", (req, res) => res.json(loadDB().classes));
-app.get("/dorms", (req, res) => res.json(loadDB().dorms));
-app.get("/students", (req, res) => res.json(loadDB().students));
-
-// Vote
-app.post("/vote", (req, res) => {
-  const db = loadDB();
-  const { admission, post, candidate } = req.body;
-
-  if (db.votes.find((v) => v.admission === admission && v.post === post)) {
-    return res.status(400).json({ message: "Already voted for this post" });
-  }
-
-  db.votes.push({ admission, post, candidate });
-  saveDB(db);
-
-  res.json({ message: "Vote cast successfully" });
-});
-
-// Get votes (for admin/results)
-app.get("/votes", (req, res) => res.json(loadDB().votes));
-
+/* ---------------------- START SERVER ---------------------- */
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Open http://localhost:${PORT} in your browser`);
 });
